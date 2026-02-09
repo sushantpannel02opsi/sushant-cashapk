@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cash App | Login</title>
+    <style>
+        :root { --accent: #00d54b; --bg: #050505; --card-bg: rgba(255, 255, 255, 0.05); --input-bg: rgba(0, 0, 0, 0.3); }
+        body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        .login-card { background: var(--card-bg); padding: 40px; border-radius: 35px; width: 100%; max-width: 340px; text-align: center; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(20px); }
+        h2 { font-size: 26px; font-weight: 800; margin: 10px 0; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 25px; }
+        input { width: 100%; padding: 16px; margin: 10px 0; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; color: white; font-size: 16px; box-sizing: border-box; }
+        button { width: 100%; padding: 16px; background: var(--accent); border: none; border-radius: 16px; color: #000; font-weight: 700; cursor: pointer; margin-top: 15px; }
+        #msg { font-size: 13px; margin-top: 15px; min-height: 20px; font-weight: 600; }
+        .admin-contact { margin-top: 35px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 25px; }
+        .contact-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; font-weight: bold;}
+        .social-links { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        .social-links a { color: #aaa; text-decoration: none; font-size: 13px; transition: 0.3s; }
+        .social-links a b { color: var(--accent); }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h2>Sign In</h2>
+        <p class="subtitle">Enter credentials to unlock</p>
+        <input type="text" id="u" placeholder="Username">
+        <input type="password" id="p" placeholder="Password">
+        <button onclick="doLogin()">Unlock Account</button>
+        <div id="msg"></div>
+
+        <div class="admin-contact">
+            <div class="contact-label">Contact Admin For Access</div>
+            <div class="social-links">
+                <a href="https://facebook.com/sushant.basnet.504665" target="_blank">Facebook: <b>sushant.basnet504665</b></a>
+                <a href="#">Instagram: <b>fimpong34</b></a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const BIN_ID = "698792ded0ea881f40a884d6";
+        const MASTER_KEY = "$2a$10$vmNwI/fI5UTux.h5IsCSNemuH.IKidqZv4pO9R3fGlgLR.st0fIM.";
+        const URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+        async function doLogin() {
+            const u = document.getElementById('u').value.trim();
+            const p = document.getElementById('p').value.trim();
+            const msg = document.getElementById('msg');
+            
+            if(!u || !p) return msg.innerText = "Error: Missing fields";
+            msg.innerText = "Verifying Access...";
+
+            try {
+                const res = await fetch(URL + "/latest", { headers: { "X-Master-Key": MASTER_KEY } });
+                const data = await res.json();
+                let users = data.record || [];
+
+                const idx = users.findIndex(user => user.username === u && user.password === p);
+                const found = users[idx];
+
+                if (found) {
+                    // STRICT CHECK 1: Expiry
+                    if (Date.now() > found.expiry) {
+                        msg.style.color = "#ff4444";
+                        return msg.innerText = "STRICT ERROR: Access Expired!";
+                    }
+
+                    // STRICT CHECK 2: Device Locking
+                    const hardwareID = localStorage.getItem('device_token');
+                    
+                    if (hardwareID !== u) { 
+                        if ((found.usedDevices || 0) >= found.deviceLimit) {
+                            msg.style.color = "#ff4444";
+                            return msg.innerText = "STRICT ERROR: Device Limit Reached!";
+                        }
+                        
+                        // Register this browser as the primary device
+                        found.usedDevices = (found.usedDevices || 0) + 1;
+                        users[idx] = found;
+                        
+                        await fetch(URL, {
+                            method: 'PUT',
+                            headers: {'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY},
+                            body: JSON.stringify(users)
+                        });
+                        localStorage.setItem('device_token', u);
+                    }
+
+                    msg.style.color = "#00d54b";
+                    msg.innerText = "Access Granted! Loading...";
+                    localStorage.setItem('active_session', JSON.stringify(found));
+                    setTimeout(() => { window.location.href = "index.html"; }, 1000);
+                } else {
+                    msg.style.color = "#ff4444";
+                    msg.innerText = "Invalid Credentials / User Deleted";
+                }
+            } catch (e) { msg.innerText = "Cloud Sync Error."; }
+        }
+    </script>
+</body>
+</html>

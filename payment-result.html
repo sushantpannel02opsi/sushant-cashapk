@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Payment Result - Cash App</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="manifest" href="manifest.json" />
+    <style>
+      @font-face {
+        font-family: "CashMarket";
+        font-style: normal;
+        src: url(font/CashSans.ttf);
+        font-display: swap;
+      }
+      :root {
+        --padding-screen: 24px;
+        --app-bg-color: #ffffff;
+        --text-primary: #000000;
+        --text-secondary: #6c757d;
+        --accent-green: #47b349;
+        --accent-red: #ff3b30;
+        --font-family: "CashMarket", -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html, body {
+        height: 100%;
+      }
+      body {
+        font-family: var(--font-family);
+        background-color: var(--app-bg-color);
+        color: var(--text-primary);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: slideIn 0.5s ease both;
+      }
+      .result-container {
+        max-width: 450px;
+        width: 100%;
+        height: 100%;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+      .result-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        height: 65px;
+      }
+      .menu-btn {
+        background: none;
+        border: none;
+        font-size: 20px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 8px;
+      }
+      .close-btn {
+        color: var(--text-primary);
+      }
+      .result-content {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: flex-start;
+        padding: 0px var(--padding-screen) 0;
+      }
+      .status-icon {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        margin-bottom: 24px;
+        animation: pop-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+      @keyframes pop-in {
+        from { transform: scale(0.5); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+      }
+      .status-icon i { color: white; font-size: 28px; }
+      .status-icon.success { background-color: var(--accent-green); }
+      .status-icon.pending { background-color: var(--accent-red); }
+      .status-icon.received { background-color: var(--text-secondary); }
+      .result-title {
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 1.3;
+      }
+      .result-details {
+        font-size: 16px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        margin-top: 16px;
+        max-width: 320px;
+      }
+      .result-details p { margin-bottom: 1em; }
+      .result-footer { padding: 0 var(--padding-screen) 40px; }
+      .done-btn {
+        width: 100%;
+        padding: 16px;
+        background-color: var(--accent-green);
+        color: white;
+        border: none;
+        border-radius: 28px;
+        font-size: 18px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .status-menu-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 5000; display: none;
+      }
+      .status-menu {
+        position: absolute; top: 60px; right: var(--padding-screen); background-color: white; border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); padding: 8px 0; min-width: 220px; opacity: 0;
+        transform: scale(0.95); transform-origin: top right; transition: all 0.2s ease;
+      }
+      .status-menu.show { opacity: 1; transform: scale(1); }
+      .status-menu-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; font-size: 16px; font-weight: 500; cursor: pointer; }
+      .status-menu-item:hover { background-color: #f0f1f2; }
+      @keyframes slideIn { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+  </head>
+  <script>
+  document.addEventListener('contextmenu', event => event.preventDefault());
+  document.onkeydown = function(e) {
+    if(e.keyCode == 123) return false;
+    if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false;
+    if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false;
+    if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false;
+  };
+</script>
+  <body>
+    <div class="result-container">
+      <header class="result-header">
+        <a href="pay.html"><button class="menu-btn close-btn"><i class="fa-solid fa-xmark"></i></button></a>
+        <button class="menu-btn" id="menu-btn"><i class="fa-solid fa-ellipsis-vertical"></i></button>
+      </header>
+      <main class="result-content" id="result-content"></main>
+      <footer class="result-footer">
+        <button class="done-btn" id="done-btn">Done</button>
+      </footer>
+      <div class="status-menu-overlay" id="status-menu-overlay">
+        <div class="status-menu" id="status-menu">
+          <div class="status-menu-item" data-status="pending"><i class="fa-solid fa-hourglass-half"></i><span>Pending Verification</span></div>
+          <div class="status-menu-item" data-status="success"><i class="fa-solid fa-check"></i><span>Direct Success</span></div>
+          <div class="status-menu-item" data-status="received"><i class="fa-solid fa-arrow-down"></i><span>Standard Received</span></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const resultContent = document.getElementById("result-content");
+      const doneBtn = document.getElementById("done-btn");
+      const menuBtn = document.getElementById("menu-btn");
+      const statusMenuOverlay = document.getElementById("status-menu-overlay");
+      const statusMenu = document.getElementById("status-menu");
+
+      const paymentAmountKey = "paymentAmount";
+      const pendingRecipientDataKey = "pendingRecipientData";
+      const pendingPaymentMessageKey = "pendingPaymentMessage";
+      const balanceKey = "cashAppBalance";
+      const transactionsKey = "cashAppTransactions";
+
+      let tempTransaction = null;
+
+      const statusTemplates = {
+        success: (amount, contactName) => ({
+          iconClass: "success",
+          icon: "fa-solid fa-check",
+          title: `You sent ${amount} to<br>${contactName}`,
+          buttonText: "Done",
+        }),
+        pending: (amount, cashtag) => ({
+          iconClass: "pending",
+          icon: "fa-solid fa-hourglass-half",
+          title: `Payment couldn't be completed`,
+          details: `<p>This payment is pending for security reasons. The ${amount} will be released to ${cashtag} when a $50 verification payment is sent.</p>`,
+          buttonText: "OK",
+        }),
+        received: (amount, contactName) => ({
+          iconClass: "received",
+          icon: "fa-solid fa-arrow-down",
+          title: `${amount} received`,
+          details: `<p>From ${contactName}</p>`,
+          buttonText: "Done",
+        }),
+      };
+
+      function formatCurrency(amount) {
+        return `$${Number(amount).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      }
+
+      function renderResult(transaction) {
+        const recipient = transaction.recipient;
+        if (!recipient) return;
+
+        const template = statusTemplates[transaction.status](
+          formatCurrency(transaction.amount),
+          transaction.status === "pending" ? recipient.cashtag : recipient.name
+        );
+
+        resultContent.innerHTML = `<div class="status-icon ${template.iconClass}"><i class="${template.icon}"></i></div><h1 class="result-title">${template.title}</h1>${template.details ? `<div class="result-details">${template.details}</div>` : ""}`;
+        doneBtn.textContent = template.buttonText;
+      }
+
+      function updateTransactionStatus(newStatus) {
+        if (!tempTransaction) return;
+        tempTransaction.status = newStatus;
+        renderResult(tempTransaction);
+      }
+
+      function finalizeTransaction() {
+        if (!tempTransaction) return;
+        let balance = parseFloat(localStorage.getItem(balanceKey) || "0");
+        const transactions = JSON.parse(localStorage.getItem(transactionsKey)) || [];
+        if (tempTransaction.status === "success" || tempTransaction.status === "pending") {
+          balance -= tempTransaction.amount;
+        }
+        transactions.push(tempTransaction);
+        localStorage.setItem(balanceKey, balance.toString());
+        localStorage.setItem(transactionsKey, JSON.stringify(transactions));
+        localStorage.removeItem(paymentAmountKey);
+        localStorage.removeItem(pendingRecipientDataKey);
+        localStorage.removeItem(pendingPaymentMessageKey);
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        const paymentAmount = parseFloat(localStorage.getItem(paymentAmountKey));
+        const recipientDataString = localStorage.getItem(pendingRecipientDataKey);
+        const paymentMessage = localStorage.getItem(pendingPaymentMessageKey) || "";
+
+        if (isNaN(paymentAmount) || !recipientDataString) {
+          window.location.href = "pay.html";
+          return;
+        }
+
+        tempTransaction = {
+          id: Date.now(),
+          type: "payment",
+          amount: paymentAmount,
+          recipient: JSON.parse(recipientDataString),
+          note: paymentMessage,
+          date: new Date().toISOString(),
+          status: "success",
+        };
+
+        renderResult(tempTransaction);
+
+        menuBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          statusMenuOverlay.style.display = "block";
+          setTimeout(() => statusMenu.classList.add("show"), 10);
+        });
+
+        statusMenuOverlay.addEventListener("click", () => {
+          statusMenu.classList.remove("show");
+          setTimeout(() => (statusMenuOverlay.style.display = "none"), 200);
+        });
+
+        statusMenu.addEventListener("click", (e) => {
+          const item = e.target.closest(".status-menu-item");
+          if (item) updateTransactionStatus(item.dataset.status);
+        });
+
+        doneBtn.addEventListener("click", (e) => {
+          finalizeTransaction();
+          window.location.href = "pay.html";
+        });
+      });
+    </script>
+    <script>
+  (function() {
+      const block = function() {
+          setInterval(function() {
+              debugger;
+          }, 50);
+      };
+      try {
+          block();
+      } catch (err) {}
+  })();
+</script>
+  </body>
+</html>

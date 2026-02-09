@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Search - SushAnt Cash App</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* Inheriting your exact variables from index.html */
+        :root {
+            --padding-screen: 18px;
+            --app-bg-color: #ffffff; /* Brighter for search focus */
+            --card-bg-color: #f2f2f2;
+            --text-primary: #000000;
+            --text-secondary: #6c757d;
+            --accent-green: #47b349;
+            --font-family: "CashMarket", -apple-system, sans-serif;
+        }
+
+        body {
+            font-family: var(--font-family);
+            background-color: var(--app-bg-color);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            animation: slideIn 0.4s ease; /* Matching your slide animation */
+        }
+
+        @keyframes slideIn {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .app-container {
+            max-width: 450px;
+            width: 100%;
+            height: 100vh;
+            padding: 0 var(--padding-screen);
+        }
+
+        /* Professional Search Header */
+        .search-header {
+            display: flex;
+            align-items: center;
+            padding: 20px 0;
+            gap: 15px;
+        }
+
+        .search-bar {
+            flex-grow: 1;
+            background: var(--card-bg-color);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            height: 48px;
+        }
+
+        .search-bar i { color: var(--text-secondary); font-size: 14px; }
+
+        .search-bar input {
+            border: none;
+            background: none;
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            outline: none;
+        }
+
+        .cancel-link {
+            font-weight: 600;
+            font-size: 15px;
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        /* Section Styling matching index.html */
+        .section-header {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin: 25px 0 15px;
+        }
+
+        /* Quick Action Grid (Inspired by your Explore grid) */
+        .action-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .action-card {
+            background: var(--card-bg-color);
+            padding: 18px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        .action-card:active { transform: scale(0.97); }
+
+        .action-card i { font-size: 20px; color: var(--accent-green); }
+
+        .action-card span { font-weight: 600; font-size: 14px; }
+
+        /* Suggested People List */
+        .suggested-item {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f2;
+        }
+
+        .avatar {
+            width: 48px;
+            height: 48px;
+            background: #e9ecef;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--text-secondary);
+        }
+
+        .info .name { display: block; font-weight: 600; font-size: 16px; }
+        .info .tag { color: var(--text-secondary); font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="search-header">
+            <div class="search-bar">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input type="text" placeholder="Name, $Cashtag, Phone" autofocus>
+            </div>
+            <a href="index.html" class="cancel-link">Cancel</a>
+        </header>
+
+        <main>
+            <div class="section-header">Services</div>
+            <div class="action-grid">
+                <div class="action-card">
+                    <i class="fa-solid fa-qrcode"></i>
+                    <span>Scan to Pay</span>
+                </div>
+                <div class="action-card">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <span>Nearby ATMs</span>
+                </div>
+            </div>
+
+            <div class="section-header">Suggested</div>
+            <div class="suggested-list">
+                <div class="suggested-item">
+                    <div class="avatar">JD</div>
+                    <div class="info">
+                        <span class="name">John Doe</span>
+                        <span class="tag">$johndoe</span>
+                    </div>
+                </div>
+                <div class="suggested-item">
+                    <div class="avatar" style="color: #6236ff; background: #eeebff;">AS</div>
+                    <div class="info">
+                        <span class="name">Alice Smith</span>
+                        <span class="tag">$asmith</span>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cloud Sync Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --cash-green: #00d54b; --bg-black: #000000; --card-grey: #121212; --border-grey: #222222; --text-white: #ffffff; --text-muted: #888888; }
+        body { background: var(--bg-black); color: var(--text-white); font-family: 'Geologica', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; letter-spacing: -0.02em; }
+        .container { width: 100%; max-width: 500px; padding: 20px 0; }
+        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
+        h2 { font-weight: 800; font-size: 32px; margin: 0; letter-spacing: -0.04em; }
+        .stats-pill { background: #1a1a1a; padding: 6px 15px; border-radius: 50px; border: 1px solid var(--border-grey); font-size: 12px; color: var(--cash-green); font-weight: 600; }
+        .subtitle { color: var(--cash-green); font-weight: 600; font-size: 14px; display: block; margin-top: 5px;}
+        label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
+        input, select { width: 100%; padding: 16px; margin-bottom: 20px; background: var(--card-grey); border: 1.5px solid var(--border-grey); color: white; border-radius: 12px; font-size: 16px; font-family: 'Geologica'; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--cash-green); }
+        .row { display: flex; gap: 15px; }
+        .primary-btn { width: 100%; padding: 18px; background: var(--cash-green); border: none; font-weight: 800; border-radius: 50px; cursor: pointer; color: #000; font-size: 16px; margin-top: 10px; }
+        .search-box { margin-top: 50px; position: relative; }
+        .search-input { border-radius: 50px; padding-left: 25px; background: #111; border-color: transparent; }
+        .user-card { background: var(--card-grey); padding: 20px; margin-top: 15px; border-radius: 20px; border: 1px solid var(--border-grey); display: flex; justify-content: space-between; align-items: center; }
+        .user-meta { display: flex; flex-direction: column; gap: 4px; }
+        .u-name { font-weight: 700; font-size: 18px; color: var(--text-white); }
+        .u-details { font-size: 13px; color: var(--text-muted); }
+        .u-expiry { font-size: 11px; color: var(--cash-green); font-weight: 600; }
+        .device-counter { text-align: center; padding: 12px; background: #1a1a1a; border-radius: 16px; min-width: 70px; border: 1px solid var(--border-grey); }
+        .device-count { display: block; font-size: 24px; font-weight: 800; color: var(--cash-green); }
+        .device-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; font-weight: 800; }
+        .btn-del { background: transparent; color: #ff4747; border: none; font-weight: 600; cursor: pointer; font-size: 12px; padding: 0; margin-top: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div><h2>Admin</h2><span class="subtitle">Cloud Sync Protocol</span></div>
+            <div id="total-users" class="stats-pill">Total: 0</div>
+        </div>
+        
+        <label>Credentials</label>
+        <div class="row">
+            <input type="text" id="u" placeholder="Username">
+            <input type="text" id="p" placeholder="Password">
+        </div>
+
+        <div class="row">
+            <div style="flex: 2;">
+                <label>Access Duration</label>
+                <select id="duration">
+                    <option value="10">10 Minutes</option>
+                    <option value="30">30 Minutes</option>
+                    <option value="10080">1 Week</option>
+                    <option value="43200">1 Month</option>
+                    <option value="999999999999">Lifetime</option>
+                </select>
+            </div>
+            <div style="flex: 1;">
+                <label>Device Cap</label>
+                <input type="number" id="limit" value="1">
+            </div>
+        </div>
+
+        <button class="primary-btn" onclick="addUser()">Create Account</button>
+
+        <div class="search-box">
+            <label>User Database</label>
+            <input type="text" id="search" class="search-input" placeholder="Search by name..." onkeyup="filterUsers()">
+        </div>
+        <div id="list"></div>
+    </div>
+
+    <script>
+        const BIN_ID = "698792ded0ea881f40a884d6";
+        const KEY = "$2a$10$vmNwI/fI5UTux.h5IsCSNemuH.IKidqZv4pO9R3fGlgLR.st0fIM.";
+        const URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+        let localUsers = [];
+
+        async function getDB() {
+            const res = await fetch(URL + "/latest", { headers: {"X-Master-Key": KEY} });
+            const data = await res.json();
+            return data.record || [];
+        }
+
+        async function updateDB(newData) {
+            await fetch(URL, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json', 'X-Master-Key': KEY},
+                body: JSON.stringify(newData)
+            });
+        }
+
+        async function addUser() {
+            const u = document.getElementById('u').value.trim();
+            const p = document.getElementById('p').value.trim();
+            const durationMin = parseInt(document.getElementById('duration').value);
+            const devLimit = parseInt(document.getElementById('limit').value) || 1;
+
+            if(!u || !p) return alert("Fill all fields");
+
+            let users = await getDB();
+            const expiryDate = Date.now() + (durationMin * 60 * 1000);
+
+            users.push({ 
+                username: u, 
+                password: p, 
+                expiry: expiryDate, 
+                deviceLimit: devLimit,
+                usedDevices: 0, // Strict device tracking
+                createdAt: Date.now()
+            });
+
+            await updateDB(users);
+            location.reload();
+        }
+
+        async function removeUser(username) {
+            if(!confirm("Are you sure? User will lose access immediately.")) return;
+            let users = await getDB();
+            await updateDB(users.filter(u => u.username !== username));
+            location.reload();
+        }
+
+        function filterUsers() {
+            const term = document.getElementById('search').value.toLowerCase();
+            renderList(localUsers.filter(u => u.username.toLowerCase().includes(term)));
+        }
+
+        function renderList(users) {
+            const list = document.getElementById('list');
+            list.innerHTML = "";
+            document.getElementById('total-users').innerText = `Total: ${users.length}`;
+            users.slice().reverse().forEach(user => {
+                const expired = Date.now() > user.expiry;
+                const timeLabel = expired ? "EXPIRED" : new Date(user.expiry).toLocaleTimeString();
+                list.innerHTML += `
+                    <div class="user-card" style="opacity: ${expired ? '0.5' : '1'}">
+                        <div class="user-meta">
+                            <span class="u-name">${user.username}</span>
+                            <span class="u-details">PW: ${user.password} | Devices: ${user.usedDevices || 0}/${user.deviceLimit}</span>
+                            <span class="u-expiry">${timeLabel}</span>
+                            <button class="btn-del" onclick="removeUser('${user.username}')">Delete Permanent</button>
+                        </div>
+                        <div class="device-counter">
+                            <span class="device-label">Status</span>
+                            <span class="device-count" style="color: ${expired ? '#ff4747' : '#00d54b'}">${expired ? 'OFF' : 'ON'}</span>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        async function load() { localUsers = await getDB(); renderList(localUsers); }
+        load();
+    </script>
+</body>
+</html>

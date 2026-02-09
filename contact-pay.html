@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0"
+    />
+    <title>Cash App Payment</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+      integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="manifest" href="manifest.json" />
+    <style>
+      @font-face {
+        font-family: "CashMarket";
+        font-style: normal;
+        src: url(font/CashSans.ttf);
+        font-display: swap;
+      }
+      :root {
+        --accent-green: #00d54b;
+        --text-primary: #000000;
+        --text-secondary: #6c757d;
+        --border-color-light: #cfcfcf;
+        --app-bg-secondary: #f9f9f9;
+      }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+      html, body { height: 100%; overflow: hidden; background-color: #000; }
+
+      @keyframes slideUpFull {
+        0% { transform: translateY(100%); }
+        100% { transform: translateY(0); }
+      }
+
+      body {
+        font-family: "CashMarket", -apple-system, BlinkMacSystemFont, sans-serif;
+        color: var(--text-primary);
+      }
+      .container {
+        max-width: 420px;
+        margin: 0 auto;
+        height: 100%;
+        background-color: #ffffff;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        animation: slideUpFull 0.55s cubic-bezier(0.165, 0.84, 0.44, 1) forwards;
+      }
+      .fixed-top-content {
+        background-color: #ffffff;
+        position: relative;
+        z-index: 10;
+        padding: 0 20px;
+        flex-shrink: 0;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px 0;
+        position: relative;
+      }
+      .header::after {
+        content: "";
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background-color: var(--border-color-light);
+      }
+      .close-btn {
+        background: none;
+        border: none;
+        color: var(--text-primary);
+        font-size: 44px;
+        font-weight: 300;
+        cursor: pointer;
+        line-height: 1;
+      }
+      .amount {
+        font-size: 19px;
+        font-weight: 600;
+        display: center;
+        align-items: center;
+        gap: 4px;
+      }
+      .multiplier {
+        font-size: 19px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+      .pay-btn {
+        background-color: #f2f2f7;
+        color: #bcbcc0;
+        border: none;
+        padding: 8px 22px;
+        border-radius: 20px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: not-allowed;
+        transition: background-color 0.2s, color 0.2s;
+        font-family: "CashMarket", sans-serif;
+      }
+      .pay-btn.active {
+        background-color: var(--accent-green);
+        color: #ffffff;
+        cursor: pointer;
+      }
+      .input-group {
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color-light);
+        padding: 18px 0;
+      }
+      .input-label {
+        color: var(--text-primary);
+        font-size: 17px;
+        font-weight: 600;
+        min-width: 45px;
+      }
+      .input-field {
+        font-family: "CashMarket", sans-serif;
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: var(--text-primary);
+        font-size: 17px;
+        padding: 4px 0;
+        outline: none;
+      }
+      .input-field::placeholder {
+        color: #c7c7cc;
+      }
+      .note-icon img { width: 34px; height: 34px; }
+      .payment-method {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        cursor: pointer;
+      }
+      .payment-left { display: flex; align-items: center; gap: 4px; }
+      .cash-app-icon img { width: 26px; height: 26px; }
+      .balance-info { color: var(--text-primary); font-size: 15px; font-weight: 600; }
+      .chevron { color: #c7c7cc; font-size: 16px; padding-right: 5px; }
+      
+      .suggested-title { 
+        font-size: 24px; 
+        font-weight: 700; 
+        margin: 20px 0 10px 0; 
+      }
+      .scrollable-content { flex-grow: 1; overflow-y: auto; padding: 0 16px; }
+      
+      .contact-item { 
+        display: flex; 
+        align-items: center; 
+        padding: 18px 3px; 
+        cursor: pointer; 
+      }
+      .contact-details { display: flex; align-items: center; gap: 14px; flex-grow: 1; }
+      .avatar {
+        width: 54px;
+        height: 54px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 22px;
+        font-weight: 500;
+        overflow: hidden;
+      }
+      .avatar img { width: 100%; height: 100%; object-fit: cover; }
+      .contact-info { display: flex; flex-direction: column; }
+      .contact-name { font-size: 18px; font-weight: 600; }
+      .contact-handle { color: var(--text-secondary); font-size: 15px; }
+      .checkbox {
+        width: 26px;
+        height: 26px;
+        border: 2px solid #555555;
+        border-radius: 30%;
+        display: grid;
+        place-items: center;
+        margin-right: 15px;
+      }
+      .contact-item.selected .checkbox { background-color: var(--accent-green); border-color: var(--accent-green); }
+      .checkbox i { color: white; font-size: 14px; transform: scale(0); transition: transform 0.2s ease; }
+      .contact-item.selected .checkbox i { transform: scale(1); }
+
+      .smart-suggestion {
+        background-color: #f9f9f9;
+        border-radius: 12px;
+        margin-bottom: 8px;
+      }
+
+      .loading-spinner-container { display: none; justify-content: center; align-items: center; padding: 20px 0; }
+      .loading-spinner-container.show { display: flex; }
+
+      #loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; display: none; justify-content: center; align-items: center; z-index: 9999; }
+      
+      .spinner-video {
+        width: 100px;
+        height: 100px;
+        object-fit: contain;
+      }
+      .list-spinner-video {
+        width: 50px;
+        height: 50px;
+        object-fit: contain;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container" id="appContainer">
+      <div class="fixed-top-content">
+        <header class="header">
+          <button class="close-btn" id="closePage">×</button>
+          <div class="amount" id="amount">$0.00</div>
+          <button class="pay-btn" id="payBtn">Pay</button>
+        </header>
+        <div class="form-section">
+          <div class="input-group">
+            <label for="toInput" class="input-label">To</label>
+            <input type="text" id="toInput" class="input-field" placeholder="Name, $Cashtag, Phone, Email" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" />
+          </div>
+          <div class="input-group">
+            <label for="forInput" class="input-label">For</label>
+            <input type="text" id="forInput" class="input-field" placeholder="Note (required)" autocomplete="off" autocorrect="off" spellcheck="false" />
+            <div class="note-icon"><img src="gemy.png" alt="Note" /></div>
+          </div>
+          <div class="input-group">
+            <div class="payment-method" id="paymentMethod">
+              <div class="payment-left">
+                <span class="input-label">Use</span>
+                <div id="mainPaymentIcon" class="cash-app-icon"></div>
+                <div id="mainPaymentInfo" class="balance-info">Cash balance: $53,936.23</div>
+              </div>
+              <div class="chevron"><i class="fas fa-chevron-down"></i></div>
+            </div>
+          </div>
+        </div>
+        <h2 class="suggested-title">Suggested</h2>
+      </div>
+      <div class="scrollable-content">
+        <div id="contactList">
+          <div class="loading-spinner-container" id="loading-spinner-list">
+            <video class="list-spinner-video" autoplay loop muted playsinline>
+              <source src="blackeer-loading-theme.mov" type="video/mp4" />
+            </video>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="loading-overlay">
+      <video class="spinner-video" autoplay loop muted playsinline>
+        <source src="blackeer-loading-theme.mov" type="video/mp4" />
+      </video>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const payBtn = document.getElementById("payBtn"),
+          toInput = document.getElementById("toInput"),
+          forInput = document.getElementById("forInput"),
+          amountDisplay = document.getElementById("amount"),
+          contactListEl = document.getElementById("contactList"),
+          loadingSpinnerList = document.getElementById("loading-spinner-list"),
+          loadingOverlay = document.getElementById("loading-overlay"),
+          appContainer = document.getElementById("appContainer"),
+          closeBtn = document.getElementById("closePage");
+
+        const contactStorageKey = "cashAppContacts";
+        let contacts = [], searchTimeout;
+        let isFetchingExternal = false;
+
+        const rawAmount = localStorage.getItem("paymentAmount") || "0.00";
+        const baseAmount = parseFloat(rawAmount.replace(/,/g, ''));
+        const availableColors = ["#8A2BE2", "#FF7F50", "#1E90FF", "#20B2AA", "#FF4500", "#DA70D6", "#FF69B4", "#DAA520", "#32CD32", "#FFD700"];
+        
+        const girlPics = ["attitude-girl-pic.jpg", "beautiful-cute-simple-girl-pic.jpg", "f7d65437f315b9cbcccb71374c66bd11.jpg", "bad88004f2898d4c4dd4b747d5e4678b.jpg", "images (1).jpeg"];
+        const boyPics = ["1st.avif", "bbb.jpg"];
+
+        const defaultContacts = [
+          { id: 1, name: "James Rodrigo", cashtag: "$jamesr55", avatar: "1st.avif", color: "#666" },
+          { id: 2, name: "Drogo Martin", cashtag: "$martin703", avatar: "bbb.jpg", color: "#8A2BE2" },
+          { id: 4, name: "Erica Martin", cashtag: "$erica38", avatar: "bad88004f2898d4c4dd4b747d5e4678b.jpg", color: "#8A2BE2" },
+          { id: 8, name: "Maria Garcia", cashtag: "$mgarcia", avatar: "images (1).jpeg", color: "#FF69B4" }
+        ];
+
+        async function fetchExternalProfile(query) {
+          const val = query.trim();
+          let backendUrl = "";
+          const baseUrl = window.location.origin;
+          if (val.startsWith('$')) backendUrl = `${baseUrl}/cash?tag=${encodeURIComponent(val)}`;
+          else if (val.startsWith('@')) backendUrl = `${baseUrl}/tiktok?user=${encodeURIComponent(val)}`;
+          else return null;
+
+          try {
+            const response = await fetch(backendUrl);
+            if (!response.ok) return null;
+            const data = await response.json();
+            return { name: data.name || val, cashtag: val, avatar: data.avatar, isExternal: true };
+          } catch (e) { return null; }
+        }
+
+        function generateContactHtml(contact, isExternal = false) {
+          const trimmedName = contact.name.trim();
+          const displayChar = (trimmedName.startsWith("$") ? trimmedName.charAt(1) : trimmedName.charAt(0)).toUpperCase() || "?";
+          const avatarContent = contact.avatar 
+              ? `<img src="${contact.avatar}" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"><div class="avatar-fallback" style="display:none; background-color:#00d54b; width:100%; height:100%; align-items:center; justify-content:center; color:#fff;">${displayChar}</div>` 
+              : `<div class="avatar-fallback" style="display:flex; background-color:${contact.color || '#00d54b'}; width:100%; height:100%; align-items:center; justify-content:center; color:#fff;">${displayChar}</div>`;
+          const externalClass = isExternal ? "smart-suggestion" : "";
+
+          return `
+              <div class="contact-item ${externalClass}" data-name="${contact.name}" data-cashtag="${contact.cashtag}">
+                  <div class="contact-details">
+                      <div class="avatar" style="width:54px; height:54px; border-radius:50%; overflow:hidden;">${avatarContent}</div>
+                      <div class="contact-info">
+                          <div class="contact-name">${contact.name} ${isExternal ? '<i class="fa-solid fa-circle-check" style="font-size:12px;color:var(--accent-green);margin-left:4px;"></i>' : ''}</div>
+                          <div class="contact-handle">${contact.cashtag}</div>
+                      </div>
+                  </div>
+                  <div class="checkbox"><i class="fa-solid fa-check"></i></div>
+              </div>`;
+        }
+
+        closeBtn.addEventListener("click", function() {
+            appContainer.style.transition = "transform 0.5s cubic-bezier(0.165, 0.84, 0.44, 1)";
+            appContainer.style.transform = "translateY(100%)";
+            setTimeout(() => { window.location.href = "pay.html"; }, 500);
+        });
+
+        const getContacts = () => JSON.parse(localStorage.getItem(contactStorageKey)) || defaultContacts;
+        
+        function renderContacts(isTyping = false, source = 'to') {
+          clearTimeout(searchTimeout);
+          const query = toInput.value;
+          if (query.includes(',')) {
+              contactListEl.innerHTML = ''; 
+              const parts = query.split(',').filter(p => p.trim() !== "");
+              const count = parts.length > 0 ? parts.length : 1;
+              amountDisplay.innerHTML = count > 1 ? `<span>$${(baseAmount * count).toLocaleString(undefined, {minimumFractionDigits: 2})}</span> <span class=\"multiplier\">(x${count})</span>` : `$${baseAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+              return; 
+          }
+          amountDisplay.textContent = `$${baseAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+          if (source === 'for') {
+            contactListEl.innerHTML = '';
+            contactListEl.appendChild(loadingSpinnerList);
+            loadingSpinnerList.classList.add("show");
+            searchTimeout = setTimeout(() => loadingSpinnerList.classList.remove("show"), 1200);
+            return;
+          }
+          if (isTyping && query.trim().length > 0) {
+            contactListEl.innerHTML = '';
+            contactListEl.appendChild(loadingSpinnerList);
+            loadingSpinnerList.classList.add("show");
+            searchTimeout = setTimeout(() => renderFilteredResults(query.trim()), 500);
+          } else { renderFilteredResults(query.trim()); }
+        }
+
+        async function renderFilteredResults(query) {
+          const cleanQuery = query.toLowerCase().replace(/^\$/, '');
+          let html = '';
+          const isExternalSearch = query.startsWith('@') || query.startsWith('$');
+          if (isExternalSearch) {
+            isFetchingExternal = true;
+            loadingSpinnerList.classList.add("show");
+          } else {
+            loadingSpinnerList.classList.remove("show");
+          }
+
+          if (isExternalSearch) {
+            try {
+              const externalData = await fetchExternalProfile(query);
+              if (externalData) { html += generateContactHtml(externalData, true); }
+            } finally { isFetchingExternal = false; }
+          }
+
+          if (query !== "") {
+            let localGirls = [...girlPics].sort(() => Math.random() - 0.5);
+            const suffixes = [" Harrison", " Lee", " Garcia", " Patel", " Swift"];
+            for (let i = 0; i < 5; i++) {
+                html += generateContactHtml({
+                    name: i === 0 ? query : query + suffixes[i % suffixes.length],
+                    cashtag: '$' + cleanQuery + (i === 0 ? '' : Math.floor(Math.random() * 99)),
+                    avatar: localGirls[i % localGirls.length],
+                    color: availableColors[i % availableColors.length]
+                });
+            }
+          } else { html = contacts.map(c => generateContactHtml(c)).join(""); }
+
+          contactListEl.innerHTML = html;
+          contactListEl.prepend(loadingSpinnerList);
+          if (!isFetchingExternal) loadingSpinnerList.classList.remove("show");
+        }
+
+        toInput.addEventListener("input", () => { renderContacts(true, 'to'); updatePayState(); });
+        forInput.addEventListener("input", () => { renderContacts(true, 'for'); updatePayState(); });
+
+        function updatePayState() {
+          payBtn.classList.toggle("active", toInput.value.trim().length > 0 && forInput.value.trim().length > 0);
+        }
+
+        contactListEl.addEventListener("click", (e) => {
+          const item = e.target.closest(".contact-item");
+          if (!item) return;
+          document.querySelectorAll(".contact-item").forEach(i => i.classList.remove("selected"));
+          item.classList.add("selected");
+          toInput.value = item.dataset.name;
+          toInput.dataset.selectedCashtag = item.dataset.cashtag;
+          updatePayState();
+        });
+
+        // --- THE FIX: 3000ms TOTAL LOADING / 2400ms REDIRECT ---
+        payBtn.addEventListener("click", function () {
+          if (!this.classList.contains("active")) return;
+          
+          const recipientData = {
+            name: toInput.value,
+            cashtag: toInput.dataset.selectedCashtag || toInput.value
+          };
+          
+          localStorage.setItem("pendingRecipientData", JSON.stringify(recipientData));
+          localStorage.setItem("pendingPaymentMessage", forInput.value);
+          
+          loadingOverlay.style.display = "flex";
+          
+          // Trigger redirect at 2.4 seconds so the loader is still spinning when the switch starts
+          setTimeout(() => {
+            window.location.href = "payment-result.html";
+          }, 2400); 
+        });
+
+        contacts = getContacts();
+        document.getElementById("mainPaymentIcon").innerHTML = `<img src="kashapp.png">`;
+        amountDisplay.textContent = `$${baseAmount.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+        renderContacts();
+      });
+    </script>
+  </body>
+</html>

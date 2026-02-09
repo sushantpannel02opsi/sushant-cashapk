@@ -1,0 +1,26 @@
+{
+  "name": "Cash App Basnet",
+  "short_name": "CashApp",
+  "description": "A payment interface styled like Cash App.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#00d54b",
+  "icons": [
+    {
+      "src": "kashapp.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "kashapp.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "kashapp.png",
+      "sizes": "144x144",
+      "type": "image/png"
+    }
+  ]
+}
