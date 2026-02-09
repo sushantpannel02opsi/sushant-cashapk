@@ -3,154 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cloud Sync Admin</title>
-    <link href="https://fonts.googleapis.com/css2?family=Geologica:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>Admin | iOS 26 Command</title>
     <style>
-        :root { --cash-green: #00d54b; --bg-black: #000000; --card-grey: #121212; --border-grey: #222222; --text-white: #ffffff; --text-muted: #888888; }
-        body { background: var(--bg-black); color: var(--text-white); font-family: 'Geologica', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; letter-spacing: -0.02em; }
-        .container { width: 100%; max-width: 500px; padding: 20px 0; }
-        .header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 40px; }
-        h2 { font-weight: 800; font-size: 32px; margin: 0; letter-spacing: -0.04em; }
-        .stats-pill { background: #1a1a1a; padding: 6px 15px; border-radius: 50px; border: 1px solid var(--border-grey); font-size: 12px; color: var(--cash-green); font-weight: 600; }
-        .subtitle { color: var(--cash-green); font-weight: 600; font-size: 14px; display: block; margin-top: 5px;}
-        label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
-        input, select { width: 100%; padding: 16px; margin-bottom: 20px; background: var(--card-grey); border: 1.5px solid var(--border-grey); color: white; border-radius: 12px; font-size: 16px; font-family: 'Geologica'; outline: none; transition: 0.2s; }
-        input:focus { border-color: var(--cash-green); }
-        .row { display: flex; gap: 15px; }
-        .primary-btn { width: 100%; padding: 18px; background: var(--cash-green); border: none; font-weight: 800; border-radius: 50px; cursor: pointer; color: #000; font-size: 16px; margin-top: 10px; }
-        .search-box { margin-top: 50px; position: relative; }
-        .search-input { border-radius: 50px; padding-left: 25px; background: #111; border-color: transparent; }
-        .user-card { background: var(--card-grey); padding: 20px; margin-top: 15px; border-radius: 20px; border: 1px solid var(--border-grey); display: flex; justify-content: space-between; align-items: center; }
-        .user-meta { display: flex; flex-direction: column; gap: 4px; }
-        .u-name { font-weight: 700; font-size: 18px; color: var(--text-white); }
-        .u-details { font-size: 13px; color: var(--text-muted); }
-        .u-expiry { font-size: 11px; color: var(--cash-green); font-weight: 600; }
-        .device-counter { text-align: center; padding: 12px; background: #1a1a1a; border-radius: 16px; min-width: 70px; border: 1px solid var(--border-grey); }
-        .device-count { display: block; font-size: 24px; font-weight: 800; color: var(--cash-green); }
-        .device-label { font-size: 9px; color: var(--text-muted); text-transform: uppercase; font-weight: 800; }
-        .btn-del { background: transparent; color: #ff4747; border: none; font-weight: 600; cursor: pointer; font-size: 12px; padding: 0; margin-top: 8px; text-align: left; }
+        :root { --accent: #00d54b; --bg: #000; --card: #111; --border: rgba(255,255,255,0.08); }
+        body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; overflow-x: hidden; }
+        .container { width: 100%; max-width: 500px; padding-bottom: 50px; }
+        
+        /* UPDATED: Full-Screen Loader */
+        #initial-loader { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100vh; /* Changed from 50vh to 100vh */
+            background: #000; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 1000; 
+            border-bottom: 2px solid var(--accent); 
+            transition: transform 1s cubic-bezier(0.85, 0, 0.15, 1); 
+        }
+        #initial-loader img { width: 120px; filter: drop-shadow(0 0 15px var(--accent)); }
+        
+        #search-loader { display: none; width: 30px; margin: 10px auto; }
+        .header { margin: 40px 0 20px 0; }
+        h2 { font-size: 36px; font-weight: 900; margin: 0; letter-spacing: -2px; }
+        .subtitle { color: var(--accent); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; }
+        .ios-card { background: var(--card); padding: 25px; border-radius: 35px; border: 1px solid var(--border); margin-bottom: 20px; backdrop-filter: blur(20px); }
+        label { font-size: 10px; color: #555; font-weight: 800; text-transform: uppercase; display: block; margin: 0 0 8px 10px; }
+        input, select { width: 100%; padding: 16px; margin-bottom: 15px; background: #080808; border: 1px solid var(--border); border-radius: 18px; color: white; font-size: 15px; box-sizing: border-box; outline: none; }
+        input:focus { border-color: var(--accent); }
+        .primary-btn { width: 100%; padding: 18px; background: var(--accent); border: none; font-weight: 900; border-radius: 50px; cursor: pointer; color: #000; font-size: 16px; box-shadow: 0 10px 20px rgba(0, 213, 75, 0.2); }
+        #creation-receipt { display: none; background: rgba(0, 213, 75, 0.05); border: 1px dashed var(--accent); padding: 20px; border-radius: 20px; margin-bottom: 20px; animation: slideIn 0.5s ease; }
+        .receipt-line { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
+        .receipt-val { font-weight: 800; color: var(--accent); }
+        .user-item { background: var(--card); padding: 20px; border-radius: 25px; margin-top: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        .u-info { flex: 1; }
+        .u-name { font-weight: 800; font-size: 17px; }
+        .u-meta { font-size: 11px; color: #555; margin-top: 3px; }
+        .btn-delete { color: #ff3b30; font-size: 11px; font-weight: 900; cursor: pointer; border: 1px solid rgba(255, 59, 48, 0.2); padding: 8px 15px; border-radius: 12px; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
+    <div id="initial-loader">
+        <img src="hand-loading.gif" alt="load">
+        <p style="font-size: 10px; color: var(--accent); font-weight: 900; letter-spacing: 3px; margin-top: 15px;">INITIALIZING PROTOCOL</p>
+    </div>
+
     <div class="container">
         <div class="header">
-            <div><h2>Admin</h2><span class="subtitle">Cloud Sync Protocol</span></div>
-            <div id="total-users" class="stats-pill">Total: 0</div>
+            <h2>Command</h2>
+            <span class="subtitle">Cloud Infrastructure v26.0</span>
         </div>
-        
-        <label>Credentials</label>
-        <div class="row">
-            <input type="text" id="u" placeholder="Username">
-            <input type="text" id="p" placeholder="Password">
+        <div id="creation-receipt">
+            <p style="text-align:center; font-weight:900; color:var(--accent); margin-bottom:15px;">USER CREATED SUCCESSFULLY</p>
+            <div id="receipt-content"></div>
+            <button onclick="this.parentElement.style.display='none'" style="width:100%; background:none; border:1px solid var(--accent); color:var(--accent); border-radius:10px; padding:5px; margin-top:10px; font-size:10px; font-weight:800; cursor:pointer;">DISMISS</button>
         </div>
-
-        <div class="row">
-            <div style="flex: 2;">
-                <label>Access Duration</label>
-                <select id="duration">
-                    <option value="10">10 Minutes</option>
-                    <option value="30">30 Minutes</option>
-                    <option value="10080">1 Week</option>
-                    <option value="43200">1 Month</option>
-                    <option value="999999999999">Lifetime</option>
-                </select>
+        <div class="ios-card">
+            <label>Authentication</label>
+            <input type="text" id="u" placeholder="Set Username">
+            <input type="text" id="p" placeholder="Set Password">
+            <div style="display: flex; gap: 10px;">
+                <div style="flex: 2;">
+                    <label>Tier</label>
+                    <select id="duration">
+                        <option value="600000">10 Minutes</option>
+                        <option value="1800000">30 Minutes</option>
+                        <option value="3600000">1 Hour</option>
+                        <option value="86400000">1 Day</option>
+                        <option value="604800000">1 Week</option>
+                        <option value="2592000000">1 Month</option>
+                        <option value="7776000000">3 Months</option>
+                        <option value="315360000000">Lifetime</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label>Limit</label>
+                    <input type="number" id="limit" value="1">
+                </div>
             </div>
-            <div style="flex: 1;">
-                <label>Device Cap</label>
-                <input type="number" id="limit" value="1">
-            </div>
+            <button class="primary-btn" onclick="addUser()">Activate Protocol</button>
         </div>
-
-        <button class="primary-btn" onclick="addUser()">Create Account</button>
-
-        <div class="search-box">
-            <label>User Database</label>
-            <input type="text" id="search" class="search-input" placeholder="Search by name..." onkeyup="filterUsers()">
+        <div class="ios-card">
+            <label>Registry Search</label>
+            <input type="text" id="search" placeholder="Search accounts..." onkeyup="doSearch()">
+            <img src="loading-dollar.gif" id="search-loader" alt="loading">
+            <div id="list"></div>
         </div>
-        <div id="list"></div>
     </div>
 
     <script>
         const BIN_ID = "698792ded0ea881f40a884d6";
         const KEY = "$2a$10$vmNwI/fI5UTux.h5IsCSNemuH.IKidqZv4pO9R3fGlgLR.st0fIM.";
         const URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-        let localUsers = [];
 
-        async function getDB() {
-            const res = await fetch(URL + "/latest", { headers: {"X-Master-Key": KEY} });
-            const data = await res.json();
-            return data.record || [];
-        }
-
-        async function updateDB(newData) {
-            await fetch(URL, {
-                method: 'PUT',
-                headers: {'Content-Type': 'application/json', 'X-Master-Key': KEY},
-                body: JSON.stringify(newData)
-            });
-        }
+        window.onload = () => {
+            // Loader stays for 2.5s then slides up
+            setTimeout(() => { 
+                document.getElementById('initial-loader').style.transform = 'translateY(-100%)'; 
+            }, 2500);
+            loadUsers();
+            setInterval(renderList, 30000); 
+        };
 
         async function addUser() {
             const u = document.getElementById('u').value.trim();
             const p = document.getElementById('p').value.trim();
-            const durationMin = parseInt(document.getElementById('duration').value);
-            const devLimit = parseInt(document.getElementById('limit').value) || 1;
-
-            if(!u || !p) return alert("Fill all fields");
-
-            let users = await getDB();
-            const expiryDate = Date.now() + (durationMin * 60 * 1000);
-
-            users.push({ 
-                username: u, 
-                password: p, 
-                expiry: expiryDate, 
-                deviceLimit: devLimit,
-                usedDevices: 0, // Strict device tracking
-                createdAt: Date.now()
-            });
-
-            await updateDB(users);
-            location.reload();
+            const dur = document.getElementById('duration');
+            const lim = document.getElementById('limit').value;
+            if(!u || !p) return alert("Fill credentials");
+            const res = await fetch(URL + "/latest", { headers: {"X-Master-Key": KEY} });
+            const data = await res.json();
+            let users = data.record || [];
+            const newUser = { 
+                username: u, password: p, 
+                durationMs: parseInt(dur.value), 
+                packageName: dur.options[dur.selectedIndex].text,
+                deviceLimit: parseInt(lim), 
+                usedDevices: 0, 
+                startTime: null, 
+                expiry: null, 
+                createdAt: new Date().toLocaleString() 
+            };
+            users.push(newUser);
+            await fetch(URL, { method: 'PUT', headers: {'Content-Type': 'application/json', 'X-Master-Key': KEY}, body: JSON.stringify(users) });
+            
+            document.getElementById('receipt-content').innerHTML = `
+                <div class="receipt-line"><span>USER:</span><span class="receipt-val">${u}</span></div>
+                <div class="receipt-line"><span>PASS:</span><span class="receipt-val">${p}</span></div>
+                <div class="receipt-line"><span>PLAN:</span><span class="receipt-val">${newUser.packageName}</span></div>
+            `;
+            document.getElementById('creation-receipt').style.display = 'block';
+            loadUsers();
         }
 
-        async function removeUser(username) {
-            if(!confirm("Are you sure? User will lose access immediately.")) return;
-            let users = await getDB();
-            await updateDB(users.filter(u => u.username !== username));
-            location.reload();
+        async function loadUsers() {
+            const res = await fetch(URL + "/latest", { headers: {"X-Master-Key": KEY} });
+            const data = await res.json();
+            window.allUsers = data.record || [];
+            renderList();
         }
 
-        function filterUsers() {
+        function renderList() {
+            if(!window.allUsers) return;
             const term = document.getElementById('search').value.toLowerCase();
-            renderList(localUsers.filter(u => u.username.toLowerCase().includes(term)));
-        }
-
-        function renderList(users) {
             const list = document.getElementById('list');
             list.innerHTML = "";
-            document.getElementById('total-users').innerText = `Total: ${users.length}`;
-            users.slice().reverse().forEach(user => {
-                const expired = Date.now() > user.expiry;
-                const timeLabel = expired ? "EXPIRED" : new Date(user.expiry).toLocaleTimeString();
+            window.allUsers.filter(u => u.username.toLowerCase().includes(term)).reverse().forEach(u => {
+                let statusHtml = "";
+                if (!u.startTime) {
+                    statusHtml = `<span style="color:#888">Waiting for Login</span>`;
+                } else {
+                    const timeLeft = u.expiry - Date.now();
+                    if (timeLeft <= 0) {
+                        statusHtml = `<span style="color:#ff3b30">EXPIRED</span>`;
+                    } else {
+                        const h = Math.floor(timeLeft / 3600000);
+                        const m = Math.floor((timeLeft % 3600000) / 60000);
+                        statusHtml = `<span style="color:var(--accent)">Active: ${h}h ${m}m left</span>`;
+                    }
+                }
                 list.innerHTML += `
-                    <div class="user-card" style="opacity: ${expired ? '0.5' : '1'}">
-                        <div class="user-meta">
-                            <span class="u-name">${user.username}</span>
-                            <span class="u-details">PW: ${user.password} | Devices: ${user.usedDevices || 0}/${user.deviceLimit}</span>
-                            <span class="u-expiry">${timeLabel}</span>
-                            <button class="btn-del" onclick="removeUser('${user.username}')">Delete Permanent</button>
+                    <div class="user-item">
+                        <div class="u-info">
+                            <span class="u-name">${u.username}</span>
+                            <div class="u-meta">PW: ${u.password} | ${statusHtml}</div>
+                            <div class="u-meta" style="color:var(--accent); font-size:9px;">Plan: ${u.packageName}</div>
                         </div>
-                        <div class="device-counter">
-                            <span class="device-label">Status</span>
-                            <span class="device-count" style="color: ${expired ? '#ff4747' : '#00d54b'}">${expired ? 'OFF' : 'ON'}</span>
-                        </div>
+                        <div class="btn-delete" onclick="deleteUser('${u.username}')">DELETE</div>
                     </div>`;
             });
         }
 
-        async function load() { localUsers = await getDB(); renderList(localUsers); }
-        load();
+        function doSearch() {
+            document.getElementById('search-loader').style.display = 'block';
+            setTimeout(() => { document.getElementById('search-loader').style.display = 'none'; renderList(); }, 400);
+        }
+
+        async function deleteUser(u) {
+            if(!confirm("Delete user?")) return;
+            const res = await fetch(URL + "/latest", { headers: {"X-Master-Key": KEY} });
+            const data = await res.json();
+            const filtered = (data.record || []).filter(user => user.username !== u);
+            await fetch(URL, { method: 'PUT', headers: {'Content-Type': 'application/json', 'X-Master-Key': KEY}, body: JSON.stringify(filtered) });
+            loadUsers();
+        }
     </script>
 </body>
 </html>
