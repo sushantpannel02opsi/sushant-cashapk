@@ -3,38 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cash App | Login</title>
+    <title>Cash App | Secure Access</title>
     <style>
-        :root { --accent: #00d54b; --bg: #050505; --card-bg: rgba(255, 255, 255, 0.05); --input-bg: rgba(0, 0, 0, 0.3); }
-        body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
-        .login-card { background: var(--card-bg); padding: 40px; border-radius: 35px; width: 100%; max-width: 340px; text-align: center; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(20px); }
-        h2 { font-size: 26px; font-weight: 800; margin: 10px 0; }
-        .subtitle { color: #888; font-size: 14px; margin-bottom: 25px; }
-        input { width: 100%; padding: 16px; margin: 10px 0; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; color: white; font-size: 16px; box-sizing: border-box; }
-        button { width: 100%; padding: 16px; background: var(--accent); border: none; border-radius: 16px; color: #000; font-weight: 700; cursor: pointer; margin-top: 15px; }
-        #msg { font-size: 13px; margin-top: 15px; min-height: 20px; font-weight: 600; }
-        .admin-contact { margin-top: 35px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 25px; }
-        .contact-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; font-weight: bold;}
-        .social-links { display: flex; flex-direction: column; gap: 10px; align-items: center; }
-        .social-links a { color: #aaa; text-decoration: none; font-size: 13px; transition: 0.3s; }
-        .social-links a b { color: var(--accent); }
+        :root { --accent: #00d54b; --bg: #000000; --card: #111111; --glass: rgba(255, 255, 255, 0.05); }
+        body, html { margin: 0; padding: 0; background: var(--bg); color: white; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica; height: 100vh; overflow: hidden; }
+        
+        /* Full Screen Loader */
+        #loader { position: fixed; inset: 0; background: var(--accent); display: none; justify-content: center; align-items: center; z-index: 999; }
+        #loader img { width: 250px; height: 250px; mix-blend-mode: multiply; }
+
+        .container { display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; padding: 20px; }
+        
+        /* Login Card */
+        .login-card { background: var(--card); padding: 40px; border-radius: 40px; width: 100%; max-width: 350px; text-align: center; border: 1px solid #222; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
+        
+        h2 { font-size: 32px; font-weight: 800; margin-bottom: 5px; letter-spacing: -1px; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 30px; }
+
+        input { width: 100%; padding: 18px; margin: 10px 0; background: #050505; border: 1px solid #222; border-radius: 18px; color: white; font-size: 16px; box-sizing: border-box; transition: 0.3s; }
+        input:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 15px rgba(0, 213, 75, 0.1); }
+        
+        .unlock-btn { width: 100%; padding: 18px; background: var(--accent); border: none; border-radius: 50px; color: #000; font-weight: 800; font-size: 16px; cursor: pointer; margin-top: 20px; transition: transform 0.2s; }
+        .unlock-btn:active { transform: scale(0.96); }
+
+        /* Admin Contact Section */
+        .admin-footer { margin-top: 35px; padding-top: 25px; border-top: 1px solid #222; }
+        .contact-label { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 2px; font-weight: 800; margin-bottom: 15px; }
+        .social-row { display: flex; justify-content: center; gap: 15px; }
+        .social-link { color: #aaa; text-decoration: none; font-size: 12px; background: var(--glass); padding: 8px 15px; border-radius: 12px; border: 1px solid #222; transition: 0.3s; }
+        .social-link b { color: var(--accent); }
+        .social-link:hover { border-color: var(--accent); color: white; }
+
+        /* Countdown UI */
+        #countdown-ui { display: none; text-align: center; animation: zoomIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .timer-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 25px 0; }
+        .timer-box { background: var(--glass); padding: 20px 10px; border-radius: 20px; border: 1px solid #222; min-width: 70px; }
+        .timer-val { display: block; font-size: 28px; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; }
+        .timer-label { font-size: 9px; color: #666; text-transform: uppercase; font-weight: 700; }
+
+        @keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
-    <div class="login-card">
-        <h2>Sign In</h2>
-        <p class="subtitle">Enter credentials to unlock</p>
-        <input type="text" id="u" placeholder="Username">
-        <input type="password" id="p" placeholder="Password">
-        <button onclick="doLogin()">Unlock Account</button>
-        <div id="msg"></div>
 
-        <div class="admin-contact">
-            <div class="contact-label">Contact Admin For Access</div>
-            <div class="social-links">
-                <a href="https://facebook.com/sushant.basnet.504665" target="_blank">Facebook: <b>sushant.basnet504665</b></a>
-                <a href="#">Instagram: <b>fimpong34</b></a>
+    <div id="loader"><img src="loading-dollar.gif" alt="loading"></div>
+
+    <div class="container">
+        <div id="login-ui" class="login-card">
+            <h2>Sign In</h2>
+            <p class="subtitle">Admin: Sushant x Fimpong</p>
+            
+            <input type="text" id="u" placeholder="Username" autocomplete="off">
+            <input type="password" id="p" placeholder="Password">
+            
+            <button class="unlock-btn" onclick="doLogin()">Unlock Account</button>
+            <div id="msg" style="margin-top: 15px; font-size: 12px; font-weight: bold; color: #ff4444;"></div>
+
+            <div class="admin-footer">
+                <div class="contact-label">Contact Admin</div>
+                <div class="social-row">
+                    <a href="https://facebook.com/sushant.basnet.504665" class="social-link" target="_blank">FB: <b>Sushant</b></a>
+                    <a href="https://www.instagram.com/fimpong34/" class="social-link">IG: <b>fimpong34</b></a>
+                </div>
             </div>
+        </div>
+
+        <div id="countdown-ui">
+            <h1 style="color: var(--accent); font-weight: 900; font-size: 40px; margin-bottom: 0;">GRANTED</h1>
+            <p style="color: #666; font-size: 14px; margin-top: 5px;">TIME REMAINING IN SESSION</p>
+            
+            <div class="timer-grid">
+                <div class="timer-box"><span class="timer-val" id="days">00</span><span class="timer-label">Days</span></div>
+                <div class="timer-box"><span class="timer-val" id="hours">00</span><span class="timer-label">Hrs</span></div>
+                <div class="timer-box"><span class="timer-val" id="mins">00</span><span class="timer-label">Min</span></div>
+                <div class="timer-box"><span class="timer-val" id="secs">00</span><span class="timer-label">Sec</span></div>
+            </div>
+
+            <div style="color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: 1px;">REDIRECTING TO DASHBOARD...</div>
         </div>
     </div>
 
@@ -48,54 +93,78 @@
             const p = document.getElementById('p').value.trim();
             const msg = document.getElementById('msg');
             
-            if(!u || !p) return msg.innerText = "Error: Missing fields";
-            msg.innerText = "Verifying Access...";
+            if(!u || !p) return msg.innerText = "Error: Fields Empty";
+            msg.style.color = "#888";
+            msg.innerText = "Verifying Protocol...";
 
             try {
                 const res = await fetch(URL + "/latest", { headers: { "X-Master-Key": MASTER_KEY } });
                 const data = await res.json();
                 let users = data.record || [];
-
                 const idx = users.findIndex(user => user.username === u && user.password === p);
-                const found = users[idx];
 
-                if (found) {
-                    // STRICT CHECK 1: Expiry
-                    if (Date.now() > found.expiry) {
-                        msg.style.color = "#ff4444";
-                        return msg.innerText = "STRICT ERROR: Access Expired!";
-                    }
+                if (idx !== -1) {
+                    let user = users[idx];
 
-                    // STRICT CHECK 2: Device Locking
-                    const hardwareID = localStorage.getItem('device_token');
-                    
-                    if (hardwareID !== u) { 
-                        if ((found.usedDevices || 0) >= found.deviceLimit) {
-                            msg.style.color = "#ff4444";
-                            return msg.innerText = "STRICT ERROR: Device Limit Reached!";
-                        }
-                        
-                        // Register this browser as the primary device
-                        found.usedDevices = (found.usedDevices || 0) + 1;
-                        users[idx] = found;
-                        
+                    // Start time only if first login
+                    if (!user.startTime) {
+                        user.startTime = Date.now();
+                        user.expiry = Date.now() + user.durationMs;
+                        users[idx] = user;
                         await fetch(URL, {
                             method: 'PUT',
                             headers: {'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY},
                             body: JSON.stringify(users)
                         });
-                        localStorage.setItem('device_token', u);
                     }
 
-                    msg.style.color = "#00d54b";
-                    msg.innerText = "Access Granted! Loading...";
-                    localStorage.setItem('active_session', JSON.stringify(found));
-                    setTimeout(() => { window.location.href = "index.html"; }, 1000);
+                    if (Date.now() > user.expiry) {
+                        msg.style.color = "#ff4444";
+                        return msg.innerText = "Error: Access Expired";
+                    }
+
+                    // STEP 1: Show GIF (3 Seconds)
+                    document.getElementById('login-ui').style.display = 'none';
+                    document.getElementById('loader').style.display = 'flex';
+
+                    setTimeout(() => {
+                        // STEP 2: Show Countdown (3 Seconds)
+                        document.getElementById('loader').style.display = 'none';
+                        document.getElementById('countdown-ui').style.display = 'block';
+                        startTimer(user.expiry);
+
+                        // STEP 3: Final Redirect
+                        setTimeout(() => {
+                            window.location.href = "index.html";
+                        }, 3000);
+
+                    }, 3000);
+
                 } else {
                     msg.style.color = "#ff4444";
-                    msg.innerText = "Invalid Credentials / User Deleted";
+                    msg.innerText = "Error: Invalid Credentials";
                 }
-            } catch (e) { msg.innerText = "Cloud Sync Error."; }
+            } catch (e) { msg.innerText = "Network Sync Error"; }
+        }
+
+        function startTimer(expiry) {
+            function update() {
+                const now = Date.now();
+                const diff = expiry - now;
+                if (diff <= 0) return;
+
+                const d = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+                document.getElementById('days').innerText = d.toString().padStart(2, '0');
+                document.getElementById('hours').innerText = h.toString().padStart(2, '0');
+                document.getElementById('mins').innerText = m.toString().padStart(2, '0');
+                document.getElementById('secs').innerText = s.toString().padStart(2, '0');
+            }
+            update();
+            setInterval(update, 1000);
         }
     </script>
 </body>
