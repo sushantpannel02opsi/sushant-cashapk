@@ -3,81 +3,104 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin | iOS 26 Command</title>
+    <title>Admin | Command Center</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root { --accent: #00d54b; --bg: #000; --card: #111; --border: rgba(255,255,255,0.08); }
-        body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; overflow-x: hidden; }
-        .container { width: 100%; max-width: 500px; padding-bottom: 50px; }
         
-        /* UPDATED: Full-Screen Loader */
-        #initial-loader { 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100%; 
-            height: 100vh; /* Changed from 50vh to 100vh */
-            background: #000; 
-            display: flex; 
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center; 
-            z-index: 1000; 
-            border-bottom: 2px solid var(--accent); 
-            transition: transform 1s cubic-bezier(0.85, 0, 0.15, 1); 
+        /* Privacy Shield Styles */
+        #privacy-shield {
+            position: fixed; inset: 0; background: #000; 
+            display: flex; flex-direction: column; justify-content: center; 
+            align-items: center; z-index: 9999;
         }
-        #initial-loader img { width: 120px; filter: drop-shadow(0 0 15px var(--accent)); }
+        .shield-input {
+            background: #111; border: 1px solid var(--accent);
+            color: var(--accent); padding: 15px; border-radius: 12px;
+            text-align: center; font-size: 24px; letter-spacing: 10px;
+            outline: none; width: 200px; font-family: monospace;
+        }
+
+        body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { width: 100%; max-width: 500px; padding-bottom: 50px; display: none; }
         
-        #search-loader { display: none; width: 30px; margin: 10px auto; }
-        .header { margin: 40px 0 20px 0; }
-        h2 { font-size: 36px; font-weight: 900; margin: 0; letter-spacing: -2px; }
-        .subtitle { color: var(--accent); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; }
-        .ios-card { background: var(--card); padding: 25px; border-radius: 35px; border: 1px solid var(--border); margin-bottom: 20px; backdrop-filter: blur(20px); }
+        /* UPDATED ACTION LOADER (Uses GIF) */
+        #action-loader { 
+            position: fixed; inset: 0; background: rgba(0,0,0,0.85); 
+            display: none; flex-direction: column; justify-content: center; 
+            align-items: center; z-index: 2000; backdrop-filter: blur(5px);
+        }
+        .loading-gif { width: 80px; margin-bottom: 15px; }
+
+        /* Initial Startup Loader */
+        #initial-loader { position: fixed; inset: 0; background: #000; display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; transition: transform 0.8s ease; }
+
+        h2 { font-size: 36px; font-weight: 900; margin: 40px 0 10px 0; letter-spacing: -2px; }
+        .subtitle { color: var(--accent); font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; display: block; }
+        
+        .ios-card { background: var(--card); padding: 25px; border-radius: 35px; border: 1px solid var(--border); margin-bottom: 20px; }
         label { font-size: 10px; color: #555; font-weight: 800; text-transform: uppercase; display: block; margin: 0 0 8px 10px; }
-        input, select { width: 100%; padding: 16px; margin-bottom: 15px; background: #080808; border: 1px solid var(--border); border-radius: 18px; color: white; font-size: 15px; box-sizing: border-box; outline: none; }
-        input:focus { border-color: var(--accent); }
-        .primary-btn { width: 100%; padding: 18px; background: var(--accent); border: none; font-weight: 900; border-radius: 50px; cursor: pointer; color: #000; font-size: 16px; box-shadow: 0 10px 20px rgba(0, 213, 75, 0.2); }
-        #creation-receipt { display: none; background: rgba(0, 213, 75, 0.05); border: 1px dashed var(--accent); padding: 20px; border-radius: 20px; margin-bottom: 20px; animation: slideIn 0.5s ease; }
-        .receipt-line { display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 5px; }
-        .receipt-val { font-weight: 800; color: var(--accent); }
-        .user-item { background: var(--card); padding: 20px; border-radius: 25px; margin-top: 12px; border: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+        
+        input, select { 
+            width: 100%; padding: 16px; margin-bottom: 15px; background: #080808; 
+            border: 1px solid var(--border); border-radius: 18px; color: white; 
+            font-size: 15px; box-sizing: border-box; outline: none; 
+        }
+        
+        .primary-btn { 
+            width: 100%; padding: 18px; background: var(--accent); border: none; 
+            font-weight: 900; border-radius: 50px; cursor: pointer; color: #000; 
+            font-size: 16px; transition: 0.3s;
+        }
+        .primary-btn:active { transform: scale(0.98); }
+
+        .user-item { 
+            background: var(--card); padding: 20px; border-radius: 25px; 
+            margin-top: 12px; border: 1px solid var(--border); 
+            display: flex; justify-content: space-between; align-items: center; 
+        }
         .u-info { flex: 1; }
-        .u-name { font-weight: 800; font-size: 17px; }
+        .u-name { font-weight: 800; font-size: 17px; display: block; }
         .u-meta { font-size: 11px; color: #555; margin-top: 3px; }
         .btn-delete { color: #ff3b30; font-size: 11px; font-weight: 900; cursor: pointer; border: 1px solid rgba(255, 59, 48, 0.2); padding: 8px 15px; border-radius: 12px; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <div id="initial-loader">
-        <img src="hand-loading.gif" alt="load">
-        <p style="font-size: 10px; color: var(--accent); font-weight: 900; letter-spacing: 3px; margin-top: 15px;">INITIALIZING PROTOCOL</p>
+
+    <div id="privacy-shield">
+        <p style="font-size: 10px; color: #555; font-weight: 900; letter-spacing: 3px; margin-bottom: 20px;">RESTRICTED ACCESS</p>
+        <input type="password" id="gate-code" class="shield-input" maxlength="4" placeholder="••••">
+        <p id="error-msg" style="color: #ff3b30; font-size: 10px; margin-top: 15px; font-weight: bold; visibility: hidden;">ACCESS DENIED</p>
     </div>
 
-    <div class="container">
+    <div id="action-loader">
+        <img src="hand-loading.gif" class="loading-gif" alt="Loading...">
+        <p id="loader-text" style="font-size: 10px; color: var(--accent); font-weight: 900; letter-spacing: 2px;">SYNCING CLOUD...</p>
+    </div>
+
+    <div id="initial-loader">
+        <img src="hand-loading.gif" style="width:120px;" alt="Initializing...">
+        <p style="font-size: 10px; color: var(--accent); font-weight: 900; letter-spacing: 3px;">ADMIN INITIALIZING</p>
+    </div>
+
+    <div class="container" id="main-content">
         <div class="header">
             <h2>Command</h2>
-            <span class="subtitle">Cloud Infrastructure v26.0</span>
+            <span class="subtitle">User Control v26.0</span>
         </div>
-        <div id="creation-receipt">
-            <p style="text-align:center; font-weight:900; color:var(--accent); margin-bottom:15px;">USER CREATED SUCCESSFULLY</p>
-            <div id="receipt-content"></div>
-            <button onclick="this.parentElement.style.display='none'" style="width:100%; background:none; border:1px solid var(--accent); color:var(--accent); border-radius:10px; padding:5px; margin-top:10px; font-size:10px; font-weight:800; cursor:pointer;">DISMISS</button>
-        </div>
+
         <div class="ios-card">
-            <label>Authentication</label>
-            <input type="text" id="u" placeholder="Set Username">
-            <input type="text" id="p" placeholder="Set Password">
+            <label>Registration</label>
+            <input type="text" id="u" placeholder="Username">
+            <input type="text" id="p" placeholder="Access Code">
+            
             <div style="display: flex; gap: 10px;">
                 <div style="flex: 2;">
-                    <label>Tier</label>
+                    <label>Duration</label>
                     <select id="duration">
-                        <option value="600000">10 Minutes</option>
-                        <option value="1800000">30 Minutes</option>
                         <option value="3600000">1 Hour</option>
                         <option value="86400000">1 Day</option>
                         <option value="604800000">1 Week</option>
-                        <option value="2592000000">1 Month</option>
-                        <option value="7776000000">3 Months</option>
                         <option value="315360000000">Lifetime</option>
                     </select>
                 </div>
@@ -86,12 +109,11 @@
                     <input type="number" id="limit" value="1">
                 </div>
             </div>
-            <button class="primary-btn" onclick="addUser()">Activate Protocol</button>
+            <button class="primary-btn" onclick="addUser()">Activate User</button>
         </div>
+
         <div class="ios-card">
-            <label>Registry Search</label>
-            <input type="text" id="search" placeholder="Search accounts..." onkeyup="doSearch()">
-            <img src="loading-dollar.gif" id="search-loader" alt="loading">
+            <label>Registry</label>
             <div id="list"></div>
         </div>
     </div>
@@ -100,97 +122,116 @@
         const BIN_ID = "698792ded0ea881f40a884d6";
         const KEY = "$2a$10$vmNwI/fI5UTux.h5IsCSNemuH.IKidqZv4pO9R3fGlgLR.st0fIM.";
         const URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+        const MASTER_CODE = "0015";
 
-        window.onload = () => {
-            // Loader stays for 2.5s then slides up
-            setTimeout(() => { 
-                document.getElementById('initial-loader').style.transform = 'translateY(-100%)'; 
-            }, 2500);
-            loadUsers();
-            setInterval(renderList, 30000); 
-        };
+        document.getElementById('gate-code').addEventListener('input', function(e) {
+            if(this.value === MASTER_CODE) {
+                // Hide code entry
+                document.getElementById('privacy-shield').style.display = 'none';
+                // Show content (hidden underneath) and start Initial Loader
+                document.getElementById('main-content').style.display = 'block';
+                document.getElementById('initial-loader').style.display = 'flex';
+                
+                setTimeout(() => {
+                    document.getElementById('initial-loader').style.transform = 'translateY(-100%)';
+                    loadUsers();
+                }, 2000);
+            } else if (this.value.length === 4) {
+                document.getElementById('error-msg').style.visibility = 'visible';
+                setTimeout(() => {
+                    this.value = "";
+                    document.getElementById('error-msg').style.visibility = 'hidden';
+                }, 1000);
+            }
+        });
+
+        function showLoader(text) {
+            document.getElementById('loader-text').innerText = text;
+            document.getElementById('action-loader').style.display = 'flex';
+        }
+
+        function hideLoader() {
+            document.getElementById('action-loader').style.display = 'none';
+        }
 
         async function addUser() {
             const u = document.getElementById('u').value.trim();
             const p = document.getElementById('p').value.trim();
-            const dur = document.getElementById('duration');
+            const dur = document.getElementById('duration').value;
             const lim = document.getElementById('limit').value;
-            if(!u || !p) return alert("Fill credentials");
-            const res = await fetch(URL + "/latest", { headers: {"X-Master-Key": KEY} });
-            const data = await res.json();
-            let users = data.record || [];
-            const newUser = { 
-                username: u, password: p, 
-                durationMs: parseInt(dur.value), 
-                packageName: dur.options[dur.selectedIndex].text,
-                deviceLimit: parseInt(lim), 
-                usedDevices: 0, 
-                startTime: null, 
-                expiry: null, 
-                createdAt: new Date().toLocaleString() 
-            };
-            users.push(newUser);
-            await fetch(URL, { method: 'PUT', headers: {'Content-Type': 'application/json', 'X-Master-Key': KEY}, body: JSON.stringify(users) });
-            
-            document.getElementById('receipt-content').innerHTML = `
-                <div class="receipt-line"><span>USER:</span><span class="receipt-val">${u}</span></div>
-                <div class="receipt-line"><span>PASS:</span><span class="receipt-val">${p}</span></div>
-                <div class="receipt-line"><span>PLAN:</span><span class="receipt-val">${newUser.packageName}</span></div>
-            `;
-            document.getElementById('creation-receipt').style.display = 'block';
-            loadUsers();
+            if(!u || !p) return alert("Fill all fields");
+
+            showLoader("CREATING USER...");
+
+            try {
+                const res = await fetch(URL + "/latest", { headers: {"X-Master-Key": KEY} });
+                const data = await res.json();
+                let users = data.record || [];
+                
+                users.push({ 
+                    username: u, password: p, 
+                    durationMs: parseInt(dur), 
+                    deviceLimit: parseInt(lim), 
+                    usedDevices: 0, 
+                    startTime: null, expiry: null, currentSession: null 
+                });
+
+                await fetch(URL, { 
+                    method: 'PUT', 
+                    headers: {'Content-Type': 'application/json', 'X-Master-Key': KEY}, 
+                    body: JSON.stringify(users) 
+                });
+                
+                document.getElementById('u').value = "";
+                document.getElementById('p').value = "";
+                
+                await loadUsers();
+            } catch (e) { alert("Error adding user"); }
+            finally { hideLoader(); }
         }
 
         async function loadUsers() {
-            const res = await fetch(URL + "/latest", { headers: {"X-Master-Key": KEY} });
-            const data = await res.json();
-            window.allUsers = data.record || [];
-            renderList();
+            try {
+                const res = await fetch(URL + "/latest", { headers: {"X-Master-Key": KEY} });
+                const data = await res.json();
+                const list = document.getElementById('list');
+                list.innerHTML = "";
+                
+                (data.record || []).reverse().forEach(u => {
+                    let statusText = u.startTime ? "ACTIVE" : "WAITING LOGIN";
+                    let statusColor = u.startTime ? "var(--accent)" : "#555";
+                    
+                    list.innerHTML += `
+                        <div class="user-item">
+                            <div class="u-info">
+                                <span class="u-name">${u.username}</span>
+                                <div class="u-meta">Code: ${u.password} | Devices: ${u.usedDevices}/${u.deviceLimit}</div>
+                                <div class="u-meta" style="color:${statusColor}; font-weight:bold;">${statusText}</div>
+                            </div>
+                            <div class="btn-delete" onclick="deleteUser('${u.username}')">DELETE</div>
+                        </div>`;
+                });
+            } catch (e) { console.error("Load failed"); }
         }
 
-        function renderList() {
-            if(!window.allUsers) return;
-            const term = document.getElementById('search').value.toLowerCase();
-            const list = document.getElementById('list');
-            list.innerHTML = "";
-            window.allUsers.filter(u => u.username.toLowerCase().includes(term)).reverse().forEach(u => {
-                let statusHtml = "";
-                if (!u.startTime) {
-                    statusHtml = `<span style="color:#888">Waiting for Login</span>`;
-                } else {
-                    const timeLeft = u.expiry - Date.now();
-                    if (timeLeft <= 0) {
-                        statusHtml = `<span style="color:#ff3b30">EXPIRED</span>`;
-                    } else {
-                        const h = Math.floor(timeLeft / 3600000);
-                        const m = Math.floor((timeLeft % 3600000) / 60000);
-                        statusHtml = `<span style="color:var(--accent)">Active: ${h}h ${m}m left</span>`;
-                    }
-                }
-                list.innerHTML += `
-                    <div class="user-item">
-                        <div class="u-info">
-                            <span class="u-name">${u.username}</span>
-                            <div class="u-meta">PW: ${u.password} | ${statusHtml}</div>
-                            <div class="u-meta" style="color:var(--accent); font-size:9px;">Plan: ${u.packageName}</div>
-                        </div>
-                        <div class="btn-delete" onclick="deleteUser('${u.username}')">DELETE</div>
-                    </div>`;
-            });
-        }
+        async function deleteUser(username) {
+            if(!confirm(`Delete ${username}? User will be logged out instantly.`)) return;
+            
+            showLoader("REMOVING USER...");
 
-        function doSearch() {
-            document.getElementById('search-loader').style.display = 'block';
-            setTimeout(() => { document.getElementById('search-loader').style.display = 'none'; renderList(); }, 400);
-        }
-
-        async function deleteUser(u) {
-            if(!confirm("Delete user?")) return;
-            const res = await fetch(URL + "/latest", { headers: {"X-Master-Key": KEY} });
-            const data = await res.json();
-            const filtered = (data.record || []).filter(user => user.username !== u);
-            await fetch(URL, { method: 'PUT', headers: {'Content-Type': 'application/json', 'X-Master-Key': KEY}, body: JSON.stringify(filtered) });
-            loadUsers();
+            try {
+                const res = await fetch(URL + "/latest", { headers: {"X-Master-Key": KEY} });
+                const data = await res.json();
+                const filtered = data.record.filter(user => user.username !== username);
+                
+                await fetch(URL, { 
+                    method: 'PUT', 
+                    headers: {'Content-Type': 'application/json', 'X-Master-Key': KEY}, 
+                    body: JSON.stringify(filtered) 
+                });
+                await loadUsers();
+            } catch (e) { alert("Error deleting user"); }
+            finally { hideLoader(); }
         }
     </script>
 </body>
