@@ -23,6 +23,61 @@
     />
     <link rel="stylesheet" href="saving.css" />
     <link rel="manifest" href="manifest.json" />
+
+   <script>
+   // Replace the existing <script> (systemGuard) at the top of index.html
+(async function systemGuard() {
+    const BIN_ID = "698792ded0ea881f40a884d6";
+    const KEY = "$2a$10$vmNwI/fI5UTux.h5IsCSNemuH.IKidqZv4pO9R3fGlgLR.st0fIM.";
+    const URL = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
+
+    async function verifySession() {
+        const localUser = localStorage.getItem('activeUser');
+        const localSessionKey = localStorage.getItem('sessionKey'); 
+
+        // 1. Immediate redirect if storage is empty
+        if (!localUser || !localSessionKey) {
+            window.location.replace("login.html");
+            return;
+        }
+
+        try {
+            const res = await fetch(URL, { headers: { "X-Master-Key": KEY } });
+            const data = await res.json();
+            const dbUser = data.record.find(u => u.username === localUser);
+
+            // 2. KICK if account is gone
+            if (!dbUser) {
+                logout("Access Revoked");
+                return;
+            }
+
+            // 3. KICK if expired
+            if (dbUser.expiry && Date.now() > dbUser.expiry) {
+                logout("Session Expired");
+                return;
+            }
+
+            // 4. MULTI-DEVICE PROTECTION
+            if (dbUser.currentSession !== localSessionKey) {
+                logout("Logged in from another device");
+                return;
+            }
+        } catch (e) { 
+            console.warn("Syncing..."); // Don't kick on small network hiccups
+        }
+    }
+
+    function logout(reason) {
+        if(reason) alert(reason);
+        localStorage.clear();
+        window.location.replace("login.html");
+    }
+
+    verifySession();
+    setInterval(verifySession, 15000); // Check every 15 seconds
+})();
+</script>
     <style>
       /* --- All existing CSS is unchanged --- */
       @font-face {
@@ -1022,49 +1077,10 @@ body {
     </style>
   </head>
 
-  <script>
-  (function() {
-    // Check for an active session in localStorage
-    const session = JSON.parse(localStorage.getItem('active_session'));
-    
-    if (!session) {
-      // If no session exists, redirect to login.html immediately
-      window.location.replace('login.html');
-    }
-  })();
-</script>
 
-  <script>
-  (function() {
-    const session = JSON.parse(localStorage.getItem('active_session'));
-    
-    if (!session) {
-      // Not logged in: Redirect immediately
-      window.location.replace('login.html');
-    } else {
-      // Logged in: Show the page content
-      document.documentElement.style.display = 'block';
-      // Wait for DOM to load to show the body
-      window.addEventListener('DOMContentLoaded', () => {
-          document.body.style.display = 'flex'; 
-      });
-      console.log("Welcome,", session.username);
-    }
-  })();
-</script>
 
- <script>
-  // Add this at the very top of your index.html scripts
-  const session = JSON.parse(localStorage.getItem('active_session'));
 
-  if (!session) {
-      // If no one is logged in, send them to login
-      window.location.href = 'login.html';
-  } else {
-      console.log("Welcome,", session.username);
-      // We removed the Date.now() check here so it stops saying "Revoked"
-  }
-</script>
+
 
 <script>
   // Disable Right-Click
