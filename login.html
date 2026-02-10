@@ -3,81 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cash App | Secure Access</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <title>Cash App | Login</title>
     <style>
-        :root { --accent: #00d54b; --bg: #000000; --card: #111111; --glass: rgba(255, 255, 255, 0.05); }
-        body, html { margin: 0; padding: 0; background: var(--bg); color: white; font-family: -apple-system, sans-serif; height: 100vh; overflow: hidden; }
-        
-        #loader { position: fixed; inset: 0; background: var(--accent); display: none; justify-content: center; align-items: center; z-index: 999; }
-        #loader img { width: 250px; height: 250px; mix-blend-mode: multiply; }
-
-        .container { display: flex; justify-content: center; align-items: center; height: 100vh; flex-direction: column; padding: 20px; }
-        .login-card { background: var(--card); padding: 40px; border-radius: 40px; width: 100%; max-width: 350px; text-align: center; border: 1px solid #222; }
-        
-        h2 { font-size: 32px; font-weight: 800; margin-bottom: 5px; }
-        .subtitle { color: #666; font-size: 14px; margin-bottom: 30px; }
-
-        input { width: 100%; padding: 18px; margin: 10px 0; background: #050505; border: 1px solid #222; border-radius: 18px; color: white; font-size: 16px; box-sizing: border-box; transition: 0.3s; }
-        input:focus { border-color: var(--accent); outline: none; background: #0a0a0a; }
-
-        .unlock-btn { width: 100%; padding: 18px; background: var(--accent); border: none; border-radius: 50px; color: #000; font-weight: 800; cursor: pointer; margin-top: 20px; font-size: 16px; transition: transform 0.2s; }
-        .unlock-btn:active { transform: scale(0.96); }
-
-        /* CONTACT SECTION */
-        .contact-admin { margin-top: 30px; border-top: 1px solid #222; padding-top: 20px; }
-        .contact-text { color: #888; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: block; }
-        .social-links { display: flex; justify-content: center; gap: 20px; }
-        .social-links a { color: white; font-size: 22px; transition: 0.3s; text-decoration: none; }
-        .social-links a:hover { color: var(--accent); transform: translateY(-3px); }
-
-        /* COUNTDOWN UI */
-        #countdown-ui { display: none; text-align: center; animation: zoomIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1); }
-        .timer-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 25px 0; }
-        .timer-box { background: var(--glass); padding: 20px 10px; border-radius: 20px; border: 1px solid #222; }
-        .timer-val { display: block; font-size: 28px; font-weight: 900; color: var(--accent); }
-        .timer-label { font-size: 9px; color: #666; text-transform: uppercase; }
-
-        #msg { margin-top: 15px; font-size: 12px; font-weight: bold; min-height: 15px; }
-        @keyframes zoomIn { from { opacity: 0; transform: scale(0.5); } to { opacity: 1; transform: scale(1); } }
+        :root { --accent: #00d54b; --bg: #050505; --card-bg: rgba(255, 255, 255, 0.05); --input-bg: rgba(0, 0, 0, 0.3); }
+        body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; overflow: hidden; }
+        .login-card { background: var(--card-bg); padding: 40px; border-radius: 35px; width: 100%; max-width: 340px; text-align: center; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(20px); }
+        h2 { font-size: 26px; font-weight: 800; margin: 10px 0; }
+        .subtitle { color: #888; font-size: 14px; margin-bottom: 25px; }
+        input { width: 100%; padding: 16px; margin: 10px 0; background: var(--input-bg); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; color: white; font-size: 16px; box-sizing: border-box; }
+        button { width: 100%; padding: 16px; background: var(--accent); border: none; border-radius: 16px; color: #000; font-weight: 700; cursor: pointer; margin-top: 15px; }
+        #msg { font-size: 13px; margin-top: 15px; min-height: 20px; font-weight: 600; }
+        .admin-contact { margin-top: 35px; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 25px; }
+        .contact-label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; font-weight: bold;}
+        .social-links { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        .social-links a { color: #aaa; text-decoration: none; font-size: 13px; transition: 0.3s; }
+        .social-links a b { color: var(--accent); }
     </style>
 </head>
 <body>
+    <div class="login-card">
+        <h2>Sign In</h2>
+        <p class="subtitle">Enter credentials to unlock</p>
+        <input type="text" id="u" placeholder="Username">
+        <input type="password" id="p" placeholder="Password">
+        <button onclick="doLogin()">Unlock Account</button>
+        <div id="msg"></div>
 
-    <div id="loader"><img src="loading-dollar.gif" alt="loading"></div>
-
-    <div class="container">
-        <div id="login-ui" class="login-card">
-            <h2>Sign In</h2>
-            <p class="subtitle">Security Checkup</p>
-            
-            <input type="text" id="u" placeholder="Username" autocomplete="off">
-            <input type="password" id="p" placeholder="Access Code">
-            
-            <button class="unlock-btn" onclick="doLogin()">Sign in</button>
-            <div id="msg"></div>
-
-            <div class="contact-admin">
-                <span class="contact-text">Contact admin for Access</span>
-                <div class="social-links">
-                    <a href="https://www.facebook.com/sushant.basnet.504665/" target="_blank"><i class="fab fa-facebook"></i></a>
-                    <a href="https://www.instagram.com/fimpong34/" target="_blank"><i class="fab fa-instagram"></i></a>
-                </div>
+        <div class="admin-contact">
+            <div class="contact-label">Contact Admin For Access</div>
+            <div class="social-links">
+                <a href="https://facebook.com/sushant.basnet.504665" target="_blank">Facebook: <b>sushant.basnet504665</b></a>
+                <a href="#">Instagram: <b>fimpong34</b></a>
             </div>
-        </div>
-
-        <div id="countdown-ui">
-            <h1 style="color: var(--accent); font-weight: 900; font-size: 40px; margin:0;">GRANTED</h1>
-            <p style="color: #666; font-size: 14px;">ESTABLISHING SECURE SESSION</p>
-            
-            <div class="timer-grid">
-                <div class="timer-box"><span class="timer-val" id="days">00</span><span class="timer-label">Days</span></div>
-                <div class="timer-box"><span class="timer-val" id="hours">00</span><span class="timer-label">Hrs</span></div>
-                <div class="timer-box"><span class="timer-val" id="mins">00</span><span class="timer-label">Min</span></div>
-                <div class="timer-box"><span class="timer-val" id="secs">00</span><span class="timer-label">Sec</span></div>
-            </div>
-            
-            <div style="color: var(--accent); font-size: 11px; font-weight: 800; letter-spacing: 2px;">ENCRYPTING DATA...</div>
         </div>
     </div>
 
@@ -91,85 +48,54 @@
             const p = document.getElementById('p').value.trim();
             const msg = document.getElementById('msg');
             
-            if(!u || !p) { msg.innerText = "Credentials Required"; return; }
+            if(!u || !p) return msg.innerText = "Error: Missing fields";
+            msg.innerText = "Verifying Access...";
 
             try {
                 const res = await fetch(URL + "/latest", { headers: { "X-Master-Key": MASTER_KEY } });
                 const data = await res.json();
                 let users = data.record || [];
+
                 const idx = users.findIndex(user => user.username === u && user.password === p);
+                const found = users[idx];
 
-                if (idx !== -1) {
-                    let user = users[idx];
-                    const localSess = localStorage.getItem('sessionKey');
-
-                    // 1. DEVICE LIMIT SECURITY
-                    if (user.usedDevices >= user.deviceLimit && user.currentSession !== localSess) {
+                if (found) {
+                    // STRICT CHECK 1: Expiry
+                    if (Date.now() > found.expiry) {
                         msg.style.color = "#ff4444";
-                        msg.innerText = `Device Limit Reached (${user.deviceLimit})`;
-                        return;
+                        return msg.innerText = "STRICT ERROR: Access Expired!";
                     }
 
-                    // 2. ACTIVATION LOGIC (Timer starts now if first login)
-                    if (!user.startTime) {
-                        user.startTime = Date.now();
-                        user.expiry = Date.now() + user.durationMs;
-                        user.usedDevices += 1;
-                    }
-
-                    // 3. EXPIRY CHECK
-                    if (user.expiry && Date.now() > user.expiry) {
-                        msg.style.color = "#ff4444";
-                        msg.innerText = "Access Key Expired";
-                        return;
-                    }
-
-                    // 4. NEW SESSION FINGERPRINT
-                    const newKey = 'sess_' + Math.random().toString(36).substr(2, 9);
-                    user.currentSession = newKey;
-                    users[idx] = user;
-
-                    // Sync to Cloud
-                    await fetch(URL, {
-                        method: 'PUT',
-                        headers: {'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY},
-                        body: JSON.stringify(users)
-                    });
-
-                    // Local Storage
-                    localStorage.setItem('activeUser', user.username);
-                    localStorage.setItem('sessionKey', newKey);
-
-                    // Show Loader then Countdown
-                    document.getElementById('login-ui').style.display = 'none';
-                    document.getElementById('loader').style.display = 'flex';
-
-                    setTimeout(() => {
-                        document.getElementById('loader').style.display = 'none';
-                        document.getElementById('countdown-ui').style.display = 'block';
-                        startTimerUI(user.expiry);
+                    // STRICT CHECK 2: Device Locking
+                    const hardwareID = localStorage.getItem('device_token');
+                    
+                    if (hardwareID !== u) { 
+                        if ((found.usedDevices || 0) >= found.deviceLimit) {
+                            msg.style.color = "#ff4444";
+                            return msg.innerText = "STRICT ERROR: Device Limit Reached!";
+                        }
                         
-                        setTimeout(() => { window.location.href = "index.html"; }, 4000);
-                    }, 3000);
+                        // Register this browser as the primary device
+                        found.usedDevices = (found.usedDevices || 0) + 1;
+                        users[idx] = found;
+                        
+                        await fetch(URL, {
+                            method: 'PUT',
+                            headers: {'Content-Type': 'application/json', 'X-Master-Key': MASTER_KEY},
+                            body: JSON.stringify(users)
+                        });
+                        localStorage.setItem('device_token', u);
+                    }
 
+                    msg.style.color = "#00d54b";
+                    msg.innerText = "Access Granted! Loading...";
+                    localStorage.setItem('active_session', JSON.stringify(found));
+                    setTimeout(() => { window.location.href = "index.html"; }, 1000);
                 } else {
                     msg.style.color = "#ff4444";
-                    msg.innerText = "Invalid Access Code";
+                    msg.innerText = "Invalid Credentials / User Deleted";
                 }
-            } catch (e) { msg.innerText = "Server Error. Try again."; }
-        }
-
-        function startTimerUI(expiry) {
-            function update() {
-                const diff = expiry - Date.now();
-                if (diff <= 0) return;
-                document.getElementById('days').innerText = Math.floor(diff / 86400000).toString().padStart(2, '0');
-                document.getElementById('hours').innerText = Math.floor((diff % 86400000) / 3600000).toString().padStart(2, '0');
-                document.getElementById('mins').innerText = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0');
-                document.getElementById('secs').innerText = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-            }
-            update();
-            setInterval(update, 1000);
+            } catch (e) { msg.innerText = "Cloud Sync Error."; }
         }
     </script>
 </body>
