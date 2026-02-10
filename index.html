@@ -24,60 +24,27 @@
     <link rel="stylesheet" href="saving.css" />
     <link rel="manifest" href="manifest.json" />
 
-   <script>
-   // Replace the existing <script> (systemGuard) at the top of index.html
-(async function systemGuard() {
-    const BIN_ID = "698792ded0ea881f40a884d6";
-    const KEY = "$2a$10$vmNwI/fI5UTux.h5IsCSNemuH.IKidqZv4pO9R3fGlgLR.st0fIM.";
-    const URL = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
+ <script>
+        (function() {
+            // Check local storage for the keys created in login.html
+            const activeUser = localStorage.getItem('activeUser');
+            const sessionKey = localStorage.getItem('sessionKey');
 
-    async function verifySession() {
-        const localUser = localStorage.getItem('activeUser');
-        const localSessionKey = localStorage.getItem('sessionKey'); 
-
-        // 1. Immediate redirect if storage is empty
-        if (!localUser || !localSessionKey) {
+            // If either key is missing, immediately redirect to login.html
+            if (!activeUser || !sessionKey) {
+                window.location.replace("login.html");
+            }
+        })();
+    </script>
+    
+  <script>
+        function logout() {
+            // Clear credentials and redirect
+            localStorage.removeItem('activeUser');
+            localStorage.removeItem('sessionKey');
             window.location.replace("login.html");
-            return;
         }
-
-        try {
-            const res = await fetch(URL, { headers: { "X-Master-Key": KEY } });
-            const data = await res.json();
-            const dbUser = data.record.find(u => u.username === localUser);
-
-            // 2. KICK if account is gone
-            if (!dbUser) {
-                logout("Access Revoked");
-                return;
-            }
-
-            // 3. KICK if expired
-            if (dbUser.expiry && Date.now() > dbUser.expiry) {
-                logout("Session Expired");
-                return;
-            }
-
-            // 4. MULTI-DEVICE PROTECTION
-            if (dbUser.currentSession !== localSessionKey) {
-                logout("Logged in from another device");
-                return;
-            }
-        } catch (e) { 
-            console.warn("Syncing..."); // Don't kick on small network hiccups
-        }
-    }
-
-    function logout(reason) {
-        if(reason) alert(reason);
-        localStorage.clear();
-        window.location.replace("login.html");
-    }
-
-    verifySession();
-    setInterval(verifySession, 15000); // Check every 15 seconds
-})();
-</script>
+    </script>
     <style>
       /* --- All existing CSS is unchanged --- */
       @font-face {
