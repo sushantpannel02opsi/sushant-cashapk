@@ -24,27 +24,26 @@
     <link rel="stylesheet" href="saving.css" />
     <link rel="manifest" href="manifest.json" />
 
- <script>
-        (function() {
-            // Check local storage for the keys created in login.html
-            const activeUser = localStorage.getItem('activeUser');
-            const sessionKey = localStorage.getItem('sessionKey');
+<script>
+    (function() {
+        // CORRECTED: Now matches the key used in login.html
+        const sessionData = localStorage.getItem('active_session');
 
-            // If either key is missing, immediately redirect to login.html
-            if (!activeUser || !sessionKey) {
-                window.location.replace("login.html");
-            }
-        })();
-    </script>
-    
-  <script>
-        function logout() {
-            // Clear credentials and redirect
-            localStorage.removeItem('activeUser');
-            localStorage.removeItem('sessionKey');
+        // If 'active_session' is missing, redirect to login
+        if (!sessionData) {
             window.location.replace("login.html");
         }
-    </script>
+    })();
+</script>
+    
+<script>
+    function logout() {
+        // CORRECTED: Clear the correct session key
+        localStorage.removeItem('active_session');
+        localStorage.removeItem('user_data');
+        window.location.replace("login.html");
+    }
+</script>
     <style>
       /* --- All existing CSS is unchanged --- */
       @font-face {
