@@ -23,27 +23,6 @@
     />
     <link rel="stylesheet" href="saving.css" />
     <link rel="manifest" href="manifest.json" />
-
-<script>
-    (function() {
-        // CORRECTED: Now matches the key used in login.html
-        const sessionData = localStorage.getItem('active_session');
-
-        // If 'active_session' is missing, redirect to login
-        if (!sessionData) {
-            window.location.replace("login.html");
-        }
-    })();
-</script>
-    
-<script>
-    function logout() {
-        // CORRECTED: Clear the correct session key
-        localStorage.removeItem('active_session');
-        localStorage.removeItem('user_data');
-        window.location.replace("login.html");
-    }
-</script>
     <style>
       /* --- All existing CSS is unchanged --- */
       @font-face {
@@ -1043,10 +1022,49 @@ body {
     </style>
   </head>
 
+  <script>
+  (function() {
+    // Check for an active session in localStorage
+    const session = JSON.parse(localStorage.getItem('active_session'));
+    
+    if (!session) {
+      // If no session exists, redirect to login.html immediately
+      window.location.replace('login.html');
+    }
+  })();
+</script>
 
+  <script>
+  (function() {
+    const session = JSON.parse(localStorage.getItem('active_session'));
+    
+    if (!session) {
+      // Not logged in: Redirect immediately
+      window.location.replace('login.html');
+    } else {
+      // Logged in: Show the page content
+      document.documentElement.style.display = 'block';
+      // Wait for DOM to load to show the body
+      window.addEventListener('DOMContentLoaded', () => {
+          document.body.style.display = 'flex'; 
+      });
+      console.log("Welcome,", session.username);
+    }
+  })();
+</script>
 
+ <script>
+  // Add this at the very top of your index.html scripts
+  const session = JSON.parse(localStorage.getItem('active_session'));
 
-
+  if (!session) {
+      // If no one is logged in, send them to login
+      window.location.href = 'login.html';
+  } else {
+      console.log("Welcome,", session.username);
+      // We removed the Date.now() check here so it stops saying "Revoked"
+  }
+</script>
 
 <script>
   // Disable Right-Click
