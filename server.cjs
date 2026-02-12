@@ -38,6 +38,7 @@ function isAllowedProxyUrl(u) {
 // --------------------
 const tiktokCache = new Map(); // username -> { name, username, avatar, time }
 const CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
+const tiktokInFlight = new Map(); // username -> Promise(payload)
 
 function cacheGet(username) {
   const hit = tiktokCache.get(username);
@@ -180,94 +181,123 @@ app.get("/tiktok", async (req, res) => {
     return res.json({ ...cached, blocked: false, cached: true });
   }
 
+  // ✅ coalesce in-flight requests for same username (typing-friendly)
+  const pending = tiktokInFlight.get(username);
+  if (pending) {
+    try {
+      const payload = await pending;
+      return res.json({ ...payload, cached: false, inflight: true });
+    } catch (e) {
+      return res.status(500).json({ error: "TikTok fetch failed", details: String(e) });
+    }
+  }
+
   const profileUrl = `https://www.tiktok.com/@${encodeURIComponent(username)}?lang=en`;
 
-  let context;
-  let page;
+  const task = (async () => {
+    let context;
+    let page;
 
-  try {
-    const browser = await getBrowser();
+    try {
+      const browser = await getBrowser();
 
-    context = await browser.newContext({
-      userAgent:
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122 Safari/537.36",
-      locale: "en-US",
-      viewport: { width: 900, height: 900 },
-    });
+      context = await browser.newContext({
+        userAgent:
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122 Safari/537.36",
+        locale: "en-US",
+        viewport: { width: 900, height: 900 },
+      });
 
-    page = await context.newPage();
-    page.setDefaultTimeout(15000);
-    page.setDefaultNavigationTimeout(15000);
+      page = await context.newPage();
+      page.setDefaultTimeout(15000);
+      page.setDefaultNavigationTimeout(15000);
 
-    await page.goto(profileUrl, { waitUntil: "domcontentloaded" });
+      // ✅ speed: block heavy resources
+      await page.route("**/*", (route) => {
+        const rt = route.request().resourceType();
+        if (["image", "media", "font", "stylesheet"].includes(rt)) return route.abort();
+        return route.continue();
+      });
 
-    const universalText = await page
-      .locator('script#__UNIVERSAL_DATA_FOR_REHYDRATION__')
-      .textContent()
-      .catch(() => null);
+      await page.goto(profileUrl, { waitUntil: "domcontentloaded" });
 
-    let avatar = null;
-    let displayName = null;
+      const universalText = await page
+        .locator('script#__UNIVERSAL_DATA_FOR_REHYDRATION__')
+        .textContent()
+        .catch(() => null);
 
-    if (universalText) {
-      try {
-        const json = JSON.parse(universalText);
-        avatar = extractAvatarFromUniversalJson(json);
+      let avatar = null;
+      let displayName = null;
 
-        // structured lookup
-        displayName = extractDisplayNameFromUniversalJson(json);
+      if (universalText) {
+        try {
+          const json = JSON.parse(universalText);
+          avatar = extractAvatarFromUniversalJson(json);
 
-        // ✅ fallback regex from raw text
-        if (!displayName) {
+          // structured lookup
+          displayName = extractDisplayNameFromUniversalJson(json);
+
+          // ✅ fallback regex from raw text
+          if (!displayName) {
+            displayName = extractNicknameFromRawText(universalText);
+          }
+        } catch {
+          // Even if JSON parse fails, try regex
           displayName = extractNicknameFromRawText(universalText);
         }
-      } catch {
-        // Even if JSON parse fails, try regex
-        displayName = extractNicknameFromRawText(universalText);
       }
-    }
 
-    // Fallback: og:image (avatar only)
-    if (!avatar) {
-      avatar = await page
-        .locator('meta[property="og:image"]')
-        .getAttribute("content")
-        .catch(() => null);
-    }
+      // Fallback: og:image (avatar only)
+      if (!avatar) {
+        avatar = await page
+          .locator('meta[property="og:image"]')
+          .getAttribute("content")
+          .catch(() => null);
+      }
 
-    if (avatar) {
-      avatar = avatar
-        .replace(/\\u002F/g, "/")
-        .replace(/\\u0026/g, "&")
-        .replace(/\\\//g, "/");
+      if (avatar) {
+        avatar = avatar
+          .replace(/\\u002F/g, "/")
+          .replace(/\\u0026/g, "&")
+          .replace(/\\\//g, "/");
 
-      avatar = normalizeUrl(avatar);
-      const proxied = avatar ? `/proxy-image?url=${encodeURIComponent(avatar)}` : null;
+        avatar = normalizeUrl(avatar);
+        const proxied = avatar ? `/proxy-image?url=${encodeURIComponent(avatar)}` : null;
 
-      const payload = {
-        name: displayName || username, // ✅ TikTok display name if found
+        const payload = {
+          name: displayName || username, // ✅ TikTok display name if found
+          username,
+          avatar: proxied,
+          blocked: false,
+        };
+
+        cacheSet(username, payload);
+
+        return payload;
+      }
+
+      return {
+        name: username,
         username,
-        avatar: proxied,
+        avatar: null,
+        blocked: true,
       };
-
-      cacheSet(username, payload);
-
-      return res.json({ ...payload, blocked: false, cached: false });
+    } finally {
+      if (page) await page.close().catch(() => {});
+      if (context) await context.close().catch(() => {});
     }
+  })();
 
-    return res.json({
-      name: username,
-      username,
-      avatar: null,
-      blocked: true,
-      cached: false,
-    });
+  tiktokInFlight.set(username, task);
+
+  try {
+    const payload = await task;
+    return res.json({ ...payload, cached: false, inflight: false });
   } catch (e) {
     console.error("tiktok error:", e);
     return res.status(500).json({ error: "TikTok fetch failed", details: String(e) });
   } finally {
-    if (page) await page.close().catch(() => {});
-    if (context) await context.close().catch(() => {});
+    tiktokInFlight.delete(username);
   }
 });
 
