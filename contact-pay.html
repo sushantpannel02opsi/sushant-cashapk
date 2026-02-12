@@ -244,7 +244,9 @@
               <div class="payment-left">
                 <span class="input-label">Use</span>
                 <div id="mainPaymentIcon" class="cash-app-icon"></div>
-                <div id="mainPaymentInfo" class="balance-info">Cash balance: $53,936.23</div>
+<div id="mainPaymentInfo" class="balance-info">
+  Cash balance: $0.00
+</div>
               </div>
               <div class="chevron"><i class="fas fa-chevron-down"></i></div>
             </div>
@@ -268,7 +270,22 @@
         <source src="blackeer-loading-theme.mov" type="video/mp4" />
       </video>
     </div>
+<script>
+  // Sync balance from index.html
+function formatCurrency(amount) {
+  return `$${Number(amount).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
 
+const savedBalance = localStorage.getItem("cashAppBalance");
+const currentBalance = parseFloat(savedBalance) || 0;
+
+document.getElementById("mainPaymentInfo").textContent =
+  "Cash balance: " + formatCurrency(currentBalance);
+
+</script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
         const payBtn = document.getElementById("payBtn"),
@@ -284,6 +301,10 @@
         const contactStorageKey = "cashAppContacts";
         let contacts = [], searchTimeout;
         let isFetchingExternal = false;
+
+        // ✅ Faster external lookups while typing (debounce + abort + in-memory cache)
+        let externalController = null;
+        const externalCache = new Map();
 
         const rawAmount = localStorage.getItem("paymentAmount") || "0.00";
         const baseAmount = parseFloat(rawAmount.replace(/,/g, ''));
@@ -307,12 +328,25 @@
           else if (val.startsWith('@')) backendUrl = `${baseUrl}/tiktok?user=${encodeURIComponent(val)}`;
           else return null;
 
+          const cacheKey = backendUrl;
+          if (externalCache.has(cacheKey)) return externalCache.get(cacheKey);
+
+          // Abort any in-flight external request (keeps typing smooth + fast)
+          if (externalController) externalController.abort();
+          externalController = new AbortController();
+
           try {
-            const response = await fetch(backendUrl);
+            const response = await fetch(backendUrl, { signal: externalController.signal });
             if (!response.ok) return null;
             const data = await response.json();
-            return { name: data.name || val, cashtag: val, avatar: data.avatar, isExternal: true };
-          } catch (e) { return null; }
+            const result = { name: data.name || val, cashtag: val, avatar: data.avatar, isExternal: true };
+            externalCache.set(cacheKey, result);
+            return result;
+          } catch (e) {
+            // Ignore abort errors (expected while typing)
+            if (e && (e.name === "AbortError" || String(e).includes("AbortError"))) return null;
+            return null;
+          }
         }
 
         function generateContactHtml(contact, isExternal = false) {
@@ -423,25 +457,29 @@
           updatePayState();
         });
 
-        // --- THE FIX: 3000ms TOTAL LOADING / 2400ms REDIRECT ---
-        payBtn.addEventListener("click", function () {
-          if (!this.classList.contains("active")) return;
-          
-          const recipientData = {
-            name: toInput.value,
-            cashtag: toInput.dataset.selectedCashtag || toInput.value
-          };
-          
-          localStorage.setItem("pendingRecipientData", JSON.stringify(recipientData));
-          localStorage.setItem("pendingPaymentMessage", forInput.value);
-          
-          loadingOverlay.style.display = "flex";
-          
-          // Trigger redirect at 2.4 seconds so the loader is still spinning when the switch starts
-          setTimeout(() => {
-            window.location.href = "payment-result.html";
-          }, 2400); 
-        });
+      payBtn.addEventListener("click", function () {
+  if (!this.classList.contains("active")) return;
+
+  const recipientData = {
+    name: toInput.value,
+    cashtag: toInput.dataset.selectedCashtag || toInput.value
+  };
+
+  localStorage.setItem("pendingRecipientData", JSON.stringify(recipientData));
+  localStorage.setItem("pendingPaymentMessage", forInput.value);
+
+  loadingOverlay.style.display = "flex";
+
+  // ✅ force browser to paint the overlay before doing anything else
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      setTimeout(() => {
+        window.location.href = "payment-result.html";
+      }, 2400);
+    });
+  });
+});
+
 
         contacts = getContacts();
         document.getElementById("mainPaymentIcon").innerHTML = `<img src="kashapp.png">`;
