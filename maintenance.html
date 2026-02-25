@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Maintenance</title>
+  <style>
+    :root{
+      --bg1:#070A12; --bg2:#0B1630; --card:#0b1020cc; --stroke:#ffffff14;
+      --text:#eaf0ff; --muted:#a9b4d0; --accent:#7c5cff; --accent2:#00d4ff;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0; min-height:100vh; display:grid; place-items:center; color:var(--text);
+      font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial;
+      background:
+        radial-gradient(1200px 700px at 20% 20%, #1b2a6b55, transparent 60%),
+        radial-gradient(900px 600px at 80% 30%, #7c5cff33, transparent 55%),
+        radial-gradient(900px 600px at 40% 80%, #00d4ff22, transparent 55%),
+        linear-gradient(180deg,var(--bg1),var(--bg2));
+      overflow:hidden;
+    }
+    .dust{position:fixed; inset:-20%; pointer-events:none; opacity:.65;
+      background-image:
+        radial-gradient(2px 2px at 20% 30%, #ffffff55 40%, transparent 50%),
+        radial-gradient(1px 1px at 70% 10%, #ffffff44 40%, transparent 50%),
+        radial-gradient(2px 2px at 50% 80%, #ffffff33 40%, transparent 50%),
+        radial-gradient(1px 1px at 10% 70%, #ffffff33 40%, transparent 50%),
+        radial-gradient(2px 2px at 90% 60%, #ffffff22 40%, transparent 50%);
+      background-size: 420px 420px, 520px 520px, 620px 620px, 720px 720px, 820px 820px;
+      animation: drift 18s linear infinite;
+    }
+    @keyframes drift{0%{transform:translate3d(0,0,0) rotate(0)}100%{transform:translate3d(8%,6%,0) rotate(6deg)}}
+    .blob{position:fixed; width:520px;height:520px;border-radius:999px;filter:blur(50px);opacity:.45;mix-blend-mode:screen;animation:float 10s ease-in-out infinite;pointer-events:none}
+    .b1{left:-120px;top:-120px;background:radial-gradient(circle at 30% 30%, var(--accent), transparent 60%)}
+    .b2{right:-160px;top:40px;background:radial-gradient(circle at 30% 30%, var(--accent2), transparent 60%);animation-delay:-2.5s}
+    .b3{left:20%;bottom:-220px;background:radial-gradient(circle at 30% 30%, #ff4fd8, transparent 60%);animation-delay:-5s}
+    @keyframes float{0%,100%{transform:translateY(0) translateX(0) scale(1)}50%{transform:translateY(30px) translateX(18px) scale(1.05)}}
+    .wrap{width:min(960px,92vw);padding:22px}
+    .card{position:relative;border:1px solid var(--stroke);background:linear-gradient(180deg,#0b1020cc,#0b1020aa);
+      border-radius:28px;padding:28px;box-shadow:0 20px 80px #00000066;overflow:hidden}
+    .shine{position:absolute;inset:-40%;background:conic-gradient(from 180deg,transparent,#ffffff18,transparent);animation:spin 7s linear infinite;opacity:.8}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .content{position:relative}
+    .badge{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:999px;
+      border:1px solid #ffffff1a;background:#0b1228;color:var(--muted);font-weight:700}
+    .dot{width:10px;height:10px;border-radius:50%;background:var(--accent2);box-shadow:0 0 0 8px #00d4ff1f;animation:pulse 1.8s ease-in-out infinite}
+    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.2)}}
+    h1{margin:16px 0 8px;font-size:clamp(28px,4vw,44px);letter-spacing:-.6px}
+    p{margin:0;color:var(--muted);font-size:clamp(14px,2vw,16px);line-height:1.6}
+    .actions{margin-top:18px;display:flex;gap:12px;flex-wrap:wrap}
+    a.btn{display:inline-flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;
+      border:1px solid #ffffff1a;background:#0b1228;color:var(--text);text-decoration:none;font-weight:800}
+    a.btn:hover{transform:translateY(-1px)}
+    .ig{background:linear-gradient(90deg,#7c5cff33,#00d4ff22)}
+    .small{margin-top:14px;font-size:12px;color:#91a0c7}
+  </style>
+</head>
+<body>
+  <div class="dust"></div>
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="shine"></div>
+      <div class="content">
+        <div class="badge"><span class="dot"></span> Server Maintenance</div>
+        <h1>We’ll be back soon</h1>
+        <p>Our server is under maintenance. It may take up to <b>1 business day</b>.<br/>
+        Sorry for the inconvenience — thank you for your patience.</p>
+
+        <div class="actions">
+          <a class="btn ig" href="https://instagram.com/fimpong34" target="_blank" rel="noreferrer">Contact Admin: @fimpong34</a>
+        </div>
+
+        <div class="small">Tip: refresh later • status: updating</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
